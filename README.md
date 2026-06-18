@@ -29,10 +29,13 @@ aucune clé API requise.
 
 ## Format de la matrice (colonnes attendues)
 
-`marque`, `type_produit`, `materiau`, `couleur`, `infos_produits`
-(infos libres séparées par des virgules), `image_url` (URL d'une image
-déjà hébergée en ligne). Un modèle Excel est téléchargeable directement
-depuis l'application (onglet "Lot").
+`marque` **(obligatoire)**, `type_produit` **(obligatoire)**, `materiau`,
+`couleur`, `infos_produits` (infos libres séparées par des virgules),
+`image_url` (image principale, déjà hébergée en ligne), `images_secondaires`
+(URLs séparées par des virgules, optionnel). Un modèle Excel est
+téléchargeable directement depuis l'application (onglet "Lot"). En lot,
+toute ligne sans marque ou type de produit est ignorée (et comptée dans
+un message récapitulatif).
 
 **Important sur "infos_produits" :** chaque information distincte doit
 être séparée par une virgule. Une phrase complète sans virgules sera
@@ -40,19 +43,28 @@ traitée comme une seule information, qui risque d'être masquée si elle
 répète déjà le matériau, la couleur ou le type de produit (voir
 `dedupliquer_caracteristiques` dans `generator.py`).
 
-**Important sur "image_url" :** l'image doit être déjà hébergée en ligne
-avec une URL d'accès direct. Un lien de partage Google Drive classique
-(```drive.google.com/file/d/.../view```) ne fonctionne pas tel quel : il
-faut un lien qui renvoie directement le fichier image.
+**Important sur les images :** elles doivent être déjà hébergées en
+ligne avec une URL d'accès direct. Un lien de partage Google Drive
+classique (```drive.google.com/file/d/.../view```) ne fonctionne pas
+tel quel : il faut un lien qui renvoie directement le fichier image.
+
+## Image principale vs images secondaires
+
+Amazon n'exige qu'une image obligatoire (la principale), mais autorise
+jusqu'à 9 images au total et la compétitivité d'une fiche en dépend en
+pratique. Seule l'image **principale** doit respecter les règles
+strictes (fond blanc, format carré) : les images **secondaires** sont
+beaucoup plus souples (lifestyle, infographies...) et ne sont vérifiées
+que sur le format, le poids et la résolution.
 
 ## Vérification de conformité image
 
 `image_check.py` télécharge l'image et vérifie (sans IA, juste de
 l'analyse d'image avec Pillow) : le format (JPEG/PNG/TIFF/GIF), le poids
 (max 10 Mo), la résolution minimale (1000px, idéalement 2000px pour le
-zoom), le ratio carré recommandé, et une estimation du fond blanc en
-testant les bords de l'image. Cette dernière vérification est une
-heuristique (test des coins de l'image), pas une garantie à 100%.
+zoom), et pour l'image principale uniquement : le ratio carré recommandé
+et une estimation du fond blanc en testant les bords de l'image. Cette
+dernière vérification est une heuristique, pas une garantie à 100%.
 
 ## Export façon Amazon
 
@@ -68,6 +80,22 @@ Ce n'est pas un import direct, mais un fichier pensé pour être
 copié-collé dans le vrai template une fois téléchargé pour la bonne
 catégorie — c'est ce qui transforme le gain de temps en gain réel,
 au-delà du simple texte généré.
+
+## Thème visuel
+
+`.streamlit/config.toml` applique un thème sombre cohérent avec
+l'identité visuelle existante (CV, portfolio) : fond quasi noir, accent
+terracotta/rose (#C4606E), texte crème. Modifiable directement dans ce
+fichier si besoin.
+
+## Historique des fiches générées
+
+Le 3ᵉ onglet ("Historique") liste les fiches générées pendant la
+session en cours (horodatage, marque, type de produit, titre généré,
+scores), avec export Excel. **Limite à connaître :** c'est un historique
+de session uniquement (stocké en mémoire via `st.session_state`), sans
+base de données — il est perdu si la page est fermée ou rechargée, et
+n'est pas partagé entre plusieurs utilisateurs.
 
 ## Pourquoi la description gère "le/la" correctement (ou pas)
 

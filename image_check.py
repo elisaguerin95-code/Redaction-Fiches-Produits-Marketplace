@@ -60,22 +60,8 @@ def _fond_est_blanc(image: Image.Image) -> bool:
     return True
 
 
-def analyser_image(contenu: bytes) -> dict:
-    """
-    Analyse le contenu binaire d'une image déjà téléchargée et retourne
-    un rapport de conformité. Séparée de _telecharger_image pour pouvoir
-    être testée sans connexion réseau (utile pour les tests unitaires).
-    """
-    try:
-        image = Image.open(io.BytesIO(contenu))
-        image.load()
-    except Exception as e:
-        return {
-            "url_valide": False, "erreur": f"Fichier image illisible : {e}",
-            "format": None, "dimensions": None, "poids_octets": len(contenu),
-            "checks": [], "score": 0.0,
-        }
-
+def _verifier_proprietes_de_base(image: Image.Image, contenu: bytes) -> list[dict]:
+    """Vérifications communes à toutes les images (principale ou secondaire)."""
     largeur, hauteur = image.size
     poids = len(contenu)
     format_image = image.format
@@ -105,35 +91,67 @@ def analyser_image(contenu: bytes) -> dict:
                   f"recommandé {DIMENSION_RECOMMANDEE}px pour activer le zoom)",
     })
 
-    ratio = max(largeur, hauteur) / min(largeur, hauteur)
-    ratio_ok = ratio <= 1.1
-    checks.append({
-        "label": "Format carré (recommandé)",
-        "passed": ratio_ok,
-        "detail": f"ratio {ratio:.2f}:1 ({'proche du carré' if ratio_ok else 'non carré, risque de recadrage automatique'})",
-    })
+    return checks
 
-    fond_blanc_ok = _fond_est_blanc(image)
-    checks.append({
-        "label": "Fond blanc (estimation)",
-        "passed": fond_blanc_ok,
-        "detail": "Bords de l'image proches du blanc pur" if fond_blanc_ok else
-                  "Bords non blancs détectés -> vérifier le fond manuellement (estimation, pas garanti à 100%)",
-    })
+
+def analyser_image(contenu: bytes, image_principale: bool = True) -> dict:
+    """
+    Analyse le contenu binaire d'une image déjà téléchargée et retourne
+    un rapport de conformité. Séparée de _telecharger_image pour pouvoir
+    être testée sans connexion réseau (utile pour les tests unitaires).
+
+    image_principale=True applique en plus les règles strictes (fond
+    blanc, format carré) qui ne s'appliquent qu'à l'image principale.
+    Amazon est beaucoup plus souple sur les images secondaires (pas de
+    fond blanc requis) -> on ne vérifie alors que format/poids/résolution.
+    """
+    try:
+        image = Image.open(io.BytesIO(contenu))
+        image.load()
+    except Exception as e:
+        return {
+            "url_valide": False, "erreur": f"Fichier image illisible : {e}",
+            "format": None, "dimensions": None, "poids_octets": len(contenu),
+            "checks": [], "score": 0.0,
+        }
+
+    largeur, hauteur = image.size
+    checks = _verifier_proprietes_de_base(image, contenu)
+
+    if image_principale:
+        ratio = max(largeur, hauteur) / min(largeur, hauteur)
+        ratio_ok = ratio <= 1.1
+        checks.append({
+            "label": "Format carré (recommandé)",
+            "passed": ratio_ok,
+            "detail": f"ratio {ratio:.2f}:1 ({'proche du carré' if ratio_ok else 'non carré, risque de recadrage automatique'})",
+        })
+
+        fond_blanc_ok = _fond_est_blanc(image)
+        checks.append({
+            "label": "Fond blanc (estimation, image principale uniquement)",
+            "passed": fond_blanc_ok,
+            "detail": "Bords de l'image proches du blanc pur" if fond_blanc_ok else
+                      "Bords non blancs détectés -> vérifier le fond manuellement (estimation, pas garanti à 100%)",
+        })
 
     points_max = len(checks)
     points_ok = sum(1 for c in checks if c["passed"])
     score = round(points_ok / points_max * 100, 1)
 
     return {
-        "url_valide": True, "erreur": None, "format": format_image,
-        "dimensions": (largeur, hauteur), "poids_octets": poids,
+        "url_valide": True, "erreur": None, "format": image.format,
+        "dimensions": (largeur, hauteur), "poids_octets": len(contenu),
         "checks": checks, "score": score,
     }
 
 
-def verifier_image(url: str) -> dict:
-    """Télécharge puis analyse l'image d'une URL. Fonction principale du module."""
+def verifier_image(url: str, image_principale: bool = True) -> dict:
+    """
+    Télécharge puis analyse l'image d'une URL. Fonction principale du
+    module. image_principale=False applique les règles plus souples des
+    images secondaires (pas de fond blanc requis).
+    """
     if not url:
         return {
             "url_valide": False, "erreur": "Aucune URL fournie",
@@ -148,7 +166,7 @@ def verifier_image(url: str) -> dict:
             "dimensions": None, "poids_octets": None, "checks": [], "score": 0.0,
         }
 
-    return analyser_image(contenu)
+    return analyser_image(contenu, image_principale=image_principale)
 
 
 if __name__ == "__main__":
@@ -171,4 +189,10 @@ if __name__ == "__main__":
     rapport_bad = analyser_image(buffer_bad.getvalue())
     print(f"Score : {rapport_bad['score']}/100")
     for c in rapport_bad["checks"]:
+        print(f"  [{'OK' if c['passed'] else 'FAIL'}] {c['label']} : {c['detail']}")
+
+    print("\n=== Image 3 : même rectangle gris, mais en image SECONDAIRE (pas de fond blanc requis) ===")
+    rapport_secondaire = analyser_image(buffer_bad.getvalue(), image_principale=False)
+    print(f"Score : {rapport_secondaire['score']}/100")
+    for c in rapport_secondaire["checks"]:
         print(f"  [{'OK' if c['passed'] else 'FAIL'}] {c['label']} : {c['detail']}")

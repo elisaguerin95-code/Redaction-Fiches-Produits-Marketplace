@@ -27,14 +27,16 @@ def generer_sku(marque: str, type_produit: str, indice: int = None) -> str:
 
 
 def generer_ligne_export_amazon(raw_input: dict, listing: dict, image_url: str = "",
-                                 indice: int = None) -> dict:
+                                 images_secondaires: list[str] = None, indice: int = None) -> dict:
     """
     Construit une ligne au format export Amazon à partir d'une fiche déjà
     générée. Les attributs spécifiques à la catégorie (Capacité, Étanche...)
-    sont ajoutés comme colonnes supplémentaires.
+    sont ajoutés comme colonnes supplémentaires, ainsi que les images
+    secondaires (other_image_url1, 2...) si fournies.
     """
     bullets = listing.get("bullets", [])
     bullets_completes = bullets + [""] * (5 - len(bullets))  # sécurité si moins de 5
+    images_secondaires = images_secondaires or []
 
     ligne = {
         "item_sku": generer_sku(raw_input.get("marque", ""), raw_input.get("type_produit", ""), indice),
@@ -53,6 +55,9 @@ def generer_ligne_export_amazon(raw_input: dict, listing: dict, image_url: str =
         "main_image_url": image_url,
         "feed_product_type": listing.get("category_suggestion", ""),
     }
+
+    for i, url in enumerate(images_secondaires, start=1):
+        ligne[f"other_image_url{i}"] = url
 
     # on ajoute les attributs spécifiques détectés (Capacité, Étanche...)
     ligne.update(listing.get("attributs_specifiques", {}))
