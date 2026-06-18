@@ -5,7 +5,7 @@ Application Streamlit : Copilot de fiches produits marketplace (Amazon).
 
 Deux modes d'entrée :
 - Fiche unique : formulaire pour un produit
-- Lot (CSV) : upload de plusieurs produits d'un coup
+- Lot (Excel) : upload de plusieurs produits d'un coup
 
 À chaque génération, la fiche est passée au moteur de règles (rules.py)
 pour calculer un score de conformité affiché au vendeur.
@@ -49,7 +49,7 @@ st.caption(
     "conforme, avec score de conformité instantané."
 )
 
-tab_single, tab_batch = st.tabs(["Fiche unique", "Lot (CSV)"])
+tab_single, tab_batch = st.tabs(["Fiche unique", "Lot (Excel)"])
 
 
 def render_result(raw_input: dict, listing: dict):
@@ -137,7 +137,7 @@ with tab_single:
 
 
 # ---------------------------------------------------------------------
-# Onglet 2 : traitement par lot (CSV)
+# Onglet 2 : traitement par lot (Excel)
 # ---------------------------------------------------------------------
 with tab_batch:
     st.markdown(
