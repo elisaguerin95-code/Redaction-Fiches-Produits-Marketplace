@@ -237,7 +237,12 @@ def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expande
         st.metric("Score de conformité", f"{score}/100")
     with grade_col:
         st.markdown(f"### {icone_depuis_score(score)} {grade_depuis_score(score)}")
-    with st.expander("Voir le détail des vérifications", key=cle_expander):
+    if f"{cle_expander}_open" not in st.session_state:
+        st.session_state[f"{cle_expander}_open"] = False
+    label_bouton = "▾ Voir le détail des vérifications" if st.session_state[f"{cle_expander}_open"] else "▸ Voir le détail des vérifications"
+    if st.button(label_bouton, key=f"{cle_expander}_btn"):
+        st.session_state[f"{cle_expander}_open"] = not st.session_state[f"{cle_expander}_open"]
+    if st.session_state[f"{cle_expander}_open"]:
         for c in checks:
             icon = "✅" if (c["passed"] if isinstance(c, dict) else c.passed) else "⚠️"
             label = c["label"] if isinstance(c, dict) else c.label
