@@ -438,6 +438,15 @@ with tab_single:
                 selected_marketplaces.append(key)
 
     st.markdown("---")
+
+    # Le choix est hors du formulaire : sinon Streamlit ne rafraîchit pas l'affichage
+    # des champs optionnels tant que le bouton de génération n'a pas été cliqué.
+    afficher_caracteristiques = st.checkbox(
+        "Ajouter des caractéristiques optionnelles",
+        value=False,
+        key="afficher_caracteristiques_optionnelles",
+    )
+
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -453,12 +462,6 @@ with tab_single:
         infos_produits = ""
         image_url = ""
         images_secondaires_brut = ""
-
-        afficher_caracteristiques = st.checkbox(
-            "Ajouter des caractéristiques optionnelles",
-            value=False,
-            key="afficher_caracteristiques_optionnelles",
-        )
 
         if afficher_caracteristiques:
             c3, c4 = st.columns(2)
