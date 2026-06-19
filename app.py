@@ -445,7 +445,22 @@ with tab_single:
         with c2:
             product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
 
-        with st.expander("Ajouter des caractéristiques optionnelles"):
+        # Valeurs par défaut si les caractéristiques optionnelles ne sont pas affichées
+        materiau = ""
+        sku = ""
+        couleur = ""
+        fabricant = ""
+        infos_produits = ""
+        image_url = ""
+        images_secondaires_brut = ""
+
+        afficher_caracteristiques = st.checkbox(
+            "Ajouter des caractéristiques optionnelles",
+            value=False,
+            key="afficher_caracteristiques_optionnelles",
+        )
+
+        if afficher_caracteristiques:
             c3, c4 = st.columns(2)
             with c3:
                 materiau = st.text_input("Matériau", placeholder="ex : inox")
