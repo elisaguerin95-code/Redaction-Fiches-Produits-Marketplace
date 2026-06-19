@@ -228,7 +228,7 @@ def _section_label(texte: str):
     """)
 
 
-def afficher_bloc_conformite(titre: str, score: float, checks, cle_expander: str):
+def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expander: str):
     """Bloc réutilisé pour le texte ET l'image : note + icône + détail dépliable."""
     st.markdown("---")
     st.subheader(titre)
@@ -304,7 +304,7 @@ def render_result(raw_input: dict, listing: dict):
         )
 
     if not marketplaces_selectionnees:
-        st.info("Aucune marketplace sélectionnée — coche au moins une option en haut de page.")
+        st.info("Aucune marketplace ou outil sélectionné — coche au moins une option en haut de page.")
     else:
         exports = generer_exports_marketplaces(
             raw_input, listing, marketplaces_selectionnees,
@@ -408,38 +408,38 @@ def parser_urls(texte: str) -> list:
 # Onglet 1 : fiche unique
 # ---------------------------------------------------------------------
 with tab_single:
+    # ── Sélection marketplace : une seule ligne de cases à cocher ──
+    st.markdown("Coche les marketplaces pour lesquelles tu veux générer un export.")
 
-    # ── Sélection des marketplaces avec logos + cases à cocher ─────────
-    MARKETPLACE_META = [
-        ("amazon",           "Amazon",           "#FF9900", "amazon.fr",             True),
-        ("cdiscount",        "Cdiscount",        "#E84D0E", "cdiscount.com",        True),
-        ("fnac_darty",       "Fnac Darty",       "#E1A500", "fnac.com",             False),
-        ("leroy_merlin",     "Leroy Merlin",     "#78B843", "leroymerlin.fr",      False),
-        ("maisons_du_monde", "Maisons du Monde", "#8B6F5E", "maisonsdumonde.com",  False),
+    MP_TO_KEY = {
+        "Amazon": "amazon",
+        "Cdiscount": "cdiscount",
+        "Fnac Darty": "fnac_darty",
+        "Leroy Merlin": "leroy_merlin",
+        "Maisons du Monde": "maisons_du_monde",
+    }
+
+    marketplace_labels = [
+        ("Amazon", "🟠"),
+        ("Cdiscount", "🔵"),
+        ("Fnac Darty", "🟡"),
+        ("Leroy Merlin", "🟢"),
+        ("Maisons du Monde", "⚪"),
     ]
 
-    _section_label("Marketplaces cibles")
-    st.caption("Coche les marketplaces pour lesquelles tu veux générer un export.")
-
-    marketplace_cols = st.columns(len(MARKETPLACE_META))
-    selected_marketplaces = []
-
-    for col, (key, name, color, domain, default_checked) in zip(marketplace_cols, MARKETPLACE_META):
-        favicon = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=64"
-        with col:
-            st.html(f"""
-            <div class="marketplace-card" style="border-top-color:{color};">
-              <img src="{favicon}"
-                   style="width:22px;height:22px;border-radius:4px;object-fit:contain;"
-                   onerror="this.style.display='none'" />
-              <span style="color:{color};">{name}</span>
-            </div>
-            """)
-            if st.checkbox(name, value=default_checked, key=f"mp_{key}"):
-                selected_marketplaces.append(key)
+    mp_cols = st.columns(len(marketplace_labels))
+    selected_pills = []
+    for idx, (label, emoji) in enumerate(marketplace_labels):
+        with mp_cols[idx]:
+            checked = st.checkbox(
+                f"{emoji} {label}",
+                value=label in ["Amazon", "Cdiscount"],
+                key=f"mp_card_{MP_TO_KEY[label]}",
+            )
+            if checked:
+                selected_pills.append(label)
 
     st.markdown("---")
-
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -504,7 +504,7 @@ with tab_single:
                 "images_secondaires": parser_urls(images_secondaires_brut),
                 "sku": sku,
                 "fabricant": fabricant,
-                "marketplaces": selected_marketplaces,
+                "marketplaces": [MP_TO_KEY[n] for n in (selected_pills or [])],
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)
@@ -618,12 +618,13 @@ with tab_batch:
                     "score_conformite_texte": report.score,
                     "score_conformite_image": score_image,
                 })
-                lignes_export_amazon.append(
-                    generer_ligne_export_amazon(
-                        raw_input, listing, image_url=image_url,
-                        images_secondaires=images_secondaires, indice=i,
+                if export_amazon_lot:
+                    lignes_export_amazon.append(
+                        generer_ligne_export_amazon(
+                            raw_input, listing, image_url=image_url,
+                            images_secondaires=images_secondaires, indice=i,
+                        )
                     )
-                )
                 if export_cdiscount_lot:
                     lignes_export_cdiscount.append(
                         generer_ligne_export_cdiscount(raw_input, listing, image_url=image_url, indice=i)
@@ -650,7 +651,8 @@ with tab_batch:
 
             result_df = pd.DataFrame(results)
             st.session_state["batch_results"] = result_df
-            st.session_state["batch_export_amazon"] = pd.DataFrame(lignes_export_amazon)
+            if lignes_export_amazon:
+                st.session_state["batch_export_amazon"] = pd.DataFrame(lignes_export_amazon)
             if lignes_export_cdiscount:
                 st.session_state["batch_export_cdiscount"] = pd.DataFrame(lignes_export_cdiscount)
             if lignes_export_fnac:

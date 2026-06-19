@@ -155,32 +155,31 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 /* ── Dataframes ──────────────────────────────────────────────── */
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
 
-/* ── Correction header Streamlit : supprime le bloc vide en haut ───── */
-[data-testid="stHeader"] {
-  display: none !important;
-  height: 0 !important;
+/* ── Marketplaces : cases à cocher façon cartes ─────────────── */
+.stCheckbox label {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  min-height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
-.block-container {
-  padding-top: 0.35rem !important;
+.stCheckbox label:hover {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-md) !important;
 }
 
-/* ── Cartes marketplaces sélectionnables ───────────────────────────── */
-.marketplace-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-top: 2px solid var(--accent);
-  border-radius: 8px;
-  padding: 9px 10px;
-  min-height: 44px;
-  margin-bottom: 0.25rem;
+/* évite le chevauchement du chevron avec le titre des expanders */
+details summary {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  min-height: 40px !important;
+  padding: 8px 12px !important;
 }
-.marketplace-card span {
-  font-family: var(--font-sans) !important;
-  font-size: 0.75rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.01em !important;
-  white-space: nowrap;
+details summary p {
+  margin: 0 !important;
+  padding-left: 4px !important;
 }
