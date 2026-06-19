@@ -28,6 +28,9 @@ from image_check import verifier_image
 from export_amazon import generer_ligne_export_amazon
 from export_cdiscount import generer_ligne_export_cdiscount
 from export_fnac_darty import generer_ligne_export_fnac_darty
+from export_leroy_merlin import generer_ligne_export_leroy_merlin
+from export_maisons_du_monde import generer_ligne_export_maisons_du_monde
+from export_shopping_feed import generer_flux_shopping_feed
 from marketplace_registry import (
     get_marketplaces_suggereees, get_marketplace_info, MARKETPLACES
 )
@@ -136,80 +139,94 @@ def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expande
             st.markdown(f"{icon} **{label}** — {detail}")
 
 
+MARKETPLACES_SUPPORTEES = ["amazon", "cdiscount", "fnac_darty", "leroy_merlin", "maisons_du_monde"]
+
+
 def generer_exports_marketplaces(raw_input: dict, listing: dict,
                                   marketplaces_selectionnees: list,
-                                  image_url: str, images_secondaires: list) -> dict:
-    """Génère les fichiers d'export pour chaque marketplace sélectionnée."""
+                                  image_url: str, images_secondaires: list,
+                                  export_shopping: bool = False) -> dict:
+    """Génère les fichiers d'export pour chaque marketplace + flux Google Shopping."""
     exports = {}
     for cle in marketplaces_selectionnees:
         if cle == "amazon":
-            ligne = generer_ligne_export_amazon(
-                raw_input, listing, image_url=image_url,
-                images_secondaires=images_secondaires,
-            )
-            exports["amazon"] = pd.DataFrame([ligne])
+            exports["amazon"] = pd.DataFrame([generer_ligne_export_amazon(
+                raw_input, listing, image_url=image_url, images_secondaires=images_secondaires)])
         elif cle == "cdiscount":
-            ligne = generer_ligne_export_cdiscount(raw_input, listing, image_url=image_url)
-            exports["cdiscount"] = pd.DataFrame([ligne])
+            exports["cdiscount"] = pd.DataFrame([generer_ligne_export_cdiscount(
+                raw_input, listing, image_url=image_url)])
         elif cle == "fnac_darty":
-            ligne = generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url)
-            exports["fnac_darty"] = pd.DataFrame([ligne])
+            exports["fnac_darty"] = pd.DataFrame([generer_ligne_export_fnac_darty(
+                raw_input, listing, image_url=image_url)])
+        elif cle == "leroy_merlin":
+            exports["leroy_merlin"] = pd.DataFrame([generer_ligne_export_leroy_merlin(
+                raw_input, listing, image_url=image_url)])
+        elif cle == "maisons_du_monde":
+            exports["maisons_du_monde"] = pd.DataFrame([generer_ligne_export_maisons_du_monde(
+                raw_input, listing, image_url=image_url, images_secondaires=images_secondaires)])
+    if export_shopping:
+        exports["shopping_feed"] = pd.DataFrame([generer_flux_shopping_feed(
+            raw_input, listing, image_url=image_url, images_secondaires=images_secondaires)])
     return exports
 
 
 def render_result(raw_input: dict, listing: dict):
-    """Affiche l'export, le avant/après, le score de conformité et l'image pour une fiche."""
+    """Affiche les exports, le avant/après, les scores de conformité et l'image."""
     report = evaluate_listing(listing)
     image_url = raw_input.get("image_url", "")
     images_secondaires = raw_input.get("images_secondaires", [])
     categorie = listing.get("category_suggestion", "Autre")
+    marketplaces_selectionnees = raw_input.get("marketplaces", ["amazon"])
+    export_shopping = raw_input.get("export_shopping", False)
 
-    # --- Sélecteur de marketplaces (pré-cochées selon la catégorie détectée) ---
+    # --- Section exports ---
     st.markdown("---")
-    st.subheader("📤 Exporter vers les marketplaces")
-    st.caption(
-        f"Marketplaces suggérées pour la catégorie **{categorie}** détectée. "
-        "Coche celles qui t'intéressent et télécharge un fichier par marketplace."
-    )
+    st.subheader("📤 Exports")
 
+    # Alertes de pertinence
     marketplaces_suggerees = get_marketplaces_suggereees(categorie)
-    marketplaces_supportees = ["amazon", "cdiscount", "fnac_darty"]
-
-    marketplaces_selectionnees = []
-    cols = st.columns(len(marketplaces_supportees))
-    for idx, cle in enumerate(marketplaces_supportees):
+    non_pertinentes = [
+        cle for cle in marketplaces_selectionnees
+        if cle not in marketplaces_suggerees
+    ]
+    for cle in non_pertinentes:
         info = get_marketplace_info(cle)
-        pre_coche = cle in marketplaces_suggerees
-        with cols[idx]:
-            selectionne = st.checkbox(
-                f"{info.get('emoji', '')} {info.get('nom', cle)}",
-                value=pre_coche,
-                key=f"mp_{cle}",
-                help=info.get("note", ""),
-            )
-            if selectionne:
-                marketplaces_selectionnees.append(cle)
-                if info.get("ean_obligatoire") and not raw_input.get("ean", ""):
-                    st.caption("⚠️ EAN obligatoire")
+        suggerees_noms = [
+            get_marketplace_info(k).get("nom", k)
+            for k in marketplaces_suggerees
+            if k in MARKETPLACES_SUPPORTEES
+        ]
+        st.warning(
+            f"⚠️ **{info.get('nom', cle)}** est peu adapté à la catégorie "
+            f"**{categorie}** — les marketplaces recommandées sont : "
+            f"{', '.join(suggerees_noms[:3])}. Tu peux quand même générer l'export."
+        )
 
-    if marketplaces_selectionnees:
+    if not marketplaces_selectionnees and not export_shopping:
+        st.info("Aucune marketplace ou outil sélectionné — coche au moins une option en haut de page.")
+    else:
         exports = generer_exports_marketplaces(
             raw_input, listing, marketplaces_selectionnees,
-            image_url, images_secondaires,
+            image_url, images_secondaires, export_shopping,
         )
-        dl_cols = st.columns(len(marketplaces_selectionnees))
-        for idx, cle in enumerate(marketplaces_selectionnees):
-            info = get_marketplace_info(cle)
-            buf = io.BytesIO()
-            exports[cle].to_excel(buf, index=False, engine="openpyxl")
-            with dl_cols[idx]:
-                st.download_button(
-                    f"⬇️ {info.get('nom', cle)}",
-                    data=buf.getvalue(),
-                    file_name=f"export_{cle}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key=f"dl_{cle}",
-                )
+        tous_les_exports = list(exports.keys())
+        if tous_les_exports:
+            dl_cols = st.columns(min(len(tous_les_exports), 3))
+            for idx, cle in enumerate(tous_les_exports):
+                buf = io.BytesIO()
+                exports[cle].to_excel(buf, index=False, engine="openpyxl")
+                nom_fichier = f"export_{cle}.xlsx"
+                if cle == "shopping_feed":
+                    label = "⬇️ Flux Google Shopping"
+                else:
+                    info = get_marketplace_info(cle)
+                    label = f"⬇️ {info.get('emoji','')} {info.get('nom', cle)}"
+                with dl_cols[idx % 3]:
+                    st.download_button(
+                        label, data=buf.getvalue(), file_name=nom_fichier,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key=f"dl_{cle}",
+                    )
 
     st.markdown("---")
     col_before, col_after = st.columns(2)
@@ -291,6 +308,32 @@ def parser_urls(texte: str) -> list:
 # ---------------------------------------------------------------------
 with tab_single:
     st.caption("* champs obligatoires")
+
+    st.markdown("**🏪 Marketplaces cibles**")
+    mp_cols = st.columns(5)
+    with mp_cols[0]:
+        sel_amazon = st.checkbox("📦 Amazon", value=True, key="single_amazon")
+    with mp_cols[1]:
+        sel_cdiscount = st.checkbox("🛒 Cdiscount", value=True, key="single_cdiscount")
+    with mp_cols[2]:
+        sel_fnac = st.checkbox("🎵 Fnac Darty", value=False, key="single_fnac")
+    with mp_cols[3]:
+        sel_lm = st.checkbox("🏡 Leroy Merlin", value=False, key="single_lm")
+    with mp_cols[4]:
+        sel_mdm = st.checkbox("🛋️ Maisons du Monde", value=False, key="single_mdm")
+
+    st.markdown("**🛠️ Outils e-commerce**")
+    st.caption(
+        "Compatible ShoppingFeed, Lengow, Channable... — "
+        "importe ce flux une fois dans votre outil, il distribue automatiquement "
+        "vers toutes vos marketplaces connectées."
+    )
+    sel_shopping = st.checkbox(
+        "🔄 Flux Google Shopping (format universel)",
+        value=False, key="single_shopping",
+    )
+
+    st.markdown("---")
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -354,6 +397,16 @@ with tab_single:
                 "images_secondaires": parser_urls(images_secondaires_brut),
                 "sku": sku,
                 "fabricant": fabricant,
+                "marketplaces": [
+                    cle for cle, sel in [
+                        ("amazon", sel_amazon),
+                        ("cdiscount", sel_cdiscount),
+                        ("fnac_darty", sel_fnac),
+                        ("leroy_merlin", sel_lm),
+                        ("maisons_du_monde", sel_mdm),
+                    ] if sel
+                ],
+                "export_shopping": sel_shopping,
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)

@@ -43,11 +43,18 @@ MARKETPLACES = {
         "note": "Marketplace sélective : expertise sectorielle recommandée.",
         "ean_obligatoire": True,
     },
+    "maisons_du_monde": {
+        "nom": "Maisons du Monde",
+        "emoji": "🛋️",
+        "description": "Spécialiste mobilier & déco (Mirakl)",
+        "note": "EAN obligatoire. DEA (Déchets d'Éléments d'Ameublement) requis pour le mobilier. Matériau mappé vers valeurs MdM.",
+        "ean_obligatoire": True,
+    },
     "leroy_merlin": {
         "nom": "Leroy Merlin",
         "emoji": "🏡",
-        "description": "Retail marketplace bricolage & maison (technologie Mirakl)",
-        "note": "Import via Mirakl. Accompagnement marchand requis.",
+        "description": "Bricolage & maison — 19M visiteurs/mois (Mirakl)",
+        "note": "EAN obligatoire. Marketplace sélective : expertise bricolage/amélioration de l'habitat requise.",
         "ean_obligatoire": True,
     },
     "fnac": {
@@ -94,10 +101,10 @@ MARKETPLACES = {
 
 CATEGORIES_VERS_MARKETPLACES = {
     "Cuisine & Maison": [
-        "amazon", "cdiscount", "fnac_darty", "manomano", "leroy_merlin",
+        "amazon", "cdiscount", "fnac_darty", "leroy_merlin",
     ],
     "Électroménager": [
-        "amazon", "cdiscount", "fnac_darty", "manomano",
+        "amazon", "cdiscount", "fnac_darty",
     ],
     "High-Tech": [
         "amazon", "cdiscount", "fnac_darty", "back_market",
@@ -112,13 +119,16 @@ CATEGORIES_VERS_MARKETPLACES = {
         "amazon", "cdiscount",
     ],
     "Maison & Luminaire": [
-        "amazon", "cdiscount", "manomano", "leroy_merlin",
+        "amazon", "cdiscount", "leroy_merlin", "maisons_du_monde",
+    ],
+    "Mobilier & Décoration": [
+        "amazon", "maisons_du_monde", "leroy_merlin", "cdiscount",
     ],
     "Jardin & Extérieur": [
-        "amazon", "cdiscount", "manomano", "leroy_merlin",
+        "amazon", "cdiscount", "leroy_merlin",
     ],
     "Bricolage & Outillage": [
-        "amazon", "cdiscount", "manomano", "leroy_merlin",
+        "amazon", "cdiscount", "leroy_merlin",
     ],
     "Mode & Vêtements": [
         "amazon", "zalando", "la_redoute",
