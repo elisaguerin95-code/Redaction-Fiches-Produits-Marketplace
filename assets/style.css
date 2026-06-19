@@ -28,8 +28,8 @@
 .stApp { background: var(--bg) !important; font-family: var(--font-sans) !important; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden !important; }
 [data-testid="stDecoration"] { display: none !important; }
-[data-testid="stHeader"] { background: var(--bg) !important; border-bottom: 1px solid var(--border) !important; }
-.block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
+[data-testid="stHeader"] { display: none !important; height: 0 !important; }
+.block-container { padding-top: 0 !important; padding-bottom: 3rem !important; }
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
 [data-testid="stSidebar"] { background: var(--bg-card) !important; border-right: 1px solid var(--border) !important; }
@@ -182,4 +182,19 @@ details summary {
 details summary p {
   margin: 0 !important;
   padding-left: 4px !important;
+}
+
+/* ── Logos marketplace dans les cases à cocher ───────────────── */
+.stCheckbox label img {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+  object-fit: contain !important;
+  margin-right: 6px !important;
+}
+.stCheckbox label p {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin: 0 !important;
 }

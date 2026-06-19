@@ -46,12 +46,12 @@ def _inject_styles():
     css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
     with open(css_path, encoding="utf-8") as f:
         css = f.read()
-    st.html(f"<style>{css}</style>")
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 _inject_styles()
 
 # ── Hero header (HTML custom, pas st.title générique) ───────────
-st.html("""
+st.markdown("""
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
 </style>
@@ -131,7 +131,7 @@ st.html("""
     </p>
   </div>
 </div>
-""")
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------------------------
 # Constantes d'affichage
@@ -210,7 +210,7 @@ tab_single, tab_batch, tab_historique = st.tabs(["Fiche unique", "Lot (Excel)", 
 
 def _section_label(texte: str):
     """En-tête de section avec bordure gauche terracotta."""
-    st.html(f"""
+    st.markdown(f"""
     <div style="
       border-left: 2px solid #C4606E;
       padding-left: 10px;
@@ -225,7 +225,7 @@ def _section_label(texte: str):
         color: #8A9BB0;
       ">{texte}</span>
     </div>
-    """)
+    """, unsafe_allow_html=True)
 
 
 def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expander: str):
@@ -408,36 +408,34 @@ def parser_urls(texte: str) -> list:
 # Onglet 1 : fiche unique
 # ---------------------------------------------------------------------
 with tab_single:
-    # ── Sélection marketplace : une seule ligne de cases à cocher ──
-    st.markdown("Coche les marketplaces pour lesquelles tu veux générer un export.")
+    # ── Sélection marketplace : une seule sélection avec logo + case à cocher ──
+    _section_label("Marketplaces cibles")
+    st.caption("Coche les marketplaces pour lesquelles tu veux générer un export.")
 
-    MP_TO_KEY = {
-        "Amazon": "amazon",
-        "Cdiscount": "cdiscount",
-        "Fnac Darty": "fnac_darty",
-        "Leroy Merlin": "leroy_merlin",
-        "Maisons du Monde": "maisons_du_monde",
-    }
-
-    marketplace_labels = [
-        ("Amazon", "🟠"),
-        ("Cdiscount", "🔵"),
-        ("Fnac Darty", "🟡"),
-        ("Leroy Merlin", "🟢"),
-        ("Maisons du Monde", "⚪"),
+    MARKETPLACE_META = [
+        ("amazon", "Amazon", "amazon.fr", True),
+        ("cdiscount", "Cdiscount", "cdiscount.com", True),
+        ("fnac_darty", "Fnac Darty", "fnac.com", False),
+        ("leroy_merlin", "Leroy Merlin", "leroymerlin.fr", False),
+        ("maisons_du_monde", "Maisons du Monde", "maisonsdumonde.com", False),
     ]
 
-    mp_cols = st.columns(len(marketplace_labels))
-    selected_pills = []
-    for idx, (label, emoji) in enumerate(marketplace_labels):
-        with mp_cols[idx]:
+    selected_marketplaces = []
+    mp_cols = st.columns(len(MARKETPLACE_META))
+
+    for col, (key, name, domain, default_checked) in zip(mp_cols, MARKETPLACE_META):
+        favicon = (
+            "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON"
+            f"&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=64"
+        )
+        with col:
             checked = st.checkbox(
-                f"{emoji} {label}",
-                value=label in ["Amazon", "Cdiscount"],
-                key=f"mp_card_{MP_TO_KEY[label]}",
+                f"![{name}]({favicon}) **{name}**",
+                value=default_checked,
+                key=f"mp_{key}",
             )
             if checked:
-                selected_pills.append(label)
+                selected_marketplaces.append(key)
 
     st.markdown("---")
     with st.form("single_listing_form"):
@@ -504,7 +502,7 @@ with tab_single:
                 "images_secondaires": parser_urls(images_secondaires_brut),
                 "sku": sku,
                 "fabricant": fabricant,
-                "marketplaces": [MP_TO_KEY[n] for n in (selected_pills or [])],
+                "marketplaces": selected_marketplaces,
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)
