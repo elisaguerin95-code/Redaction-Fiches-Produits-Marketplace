@@ -6,7 +6,7 @@ marketplace (Amazon).
 
 Deux modes d'entrée :
 - Fiche unique : formulaire pour un produit
-- Lot (Excel) : upload de plusieurs produits d'un coup
+- Lot (Excel) : Sélectionner un fichier Excel de plusieurs produits d'un coup
 
 Un troisième onglet affiche l'historique des fiches générées pendant la
 session en cours (pas persistant entre deux visites, voir README).
@@ -561,10 +561,10 @@ with tab_batch:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    uploaded_file = st.file_uploader("Importer la matrice Excel des produits", type=["xlsx"])
+    Sélectionner un fichier Exceled_file = st.file_Sélectionner un fichier Exceler("Importer la matrice Excel des produits", type=["xlsx"])
 
-    if uploaded_file is not None:
-        df_input = pd.read_excel(uploaded_file)
+    if Sélectionner un fichier Exceled_file is not None:
+        df_input = pd.read_excel(Sélectionner un fichier Exceled_file)
         df_input = df_input.fillna("")  # évite les erreurs sur les cellules vides
         st.dataframe(df_input, use_container_width=True)
 
