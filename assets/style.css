@@ -171,18 +171,6 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   border-color: var(--border-md) !important;
 }
 
-/* évite le chevauchement du chevron avec le titre des expanders */
-details summary {
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  min-height: 40px !important;
-  padding: 8px 12px !important;
-}
-details summary p {
-  margin: 0 !important;
-  padding-left: 4px !important;
-}
 
 /* ── Logos marketplace dans les cases à cocher ───────────────── */
 .stCheckbox label img {
