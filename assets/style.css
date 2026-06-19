@@ -154,3 +154,33 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 
 /* ── Dataframes ──────────────────────────────────────────────── */
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
+
+/* ── Correction header Streamlit : supprime le bloc vide en haut ───── */
+[data-testid="stHeader"] {
+  display: none !important;
+  height: 0 !important;
+}
+.block-container {
+  padding-top: 0.35rem !important;
+}
+
+/* ── Cartes marketplaces sélectionnables ───────────────────────────── */
+.marketplace-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 9px 10px;
+  min-height: 44px;
+  margin-bottom: 0.25rem;
+}
+.marketplace-card span {
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  white-space: nowrap;
+}

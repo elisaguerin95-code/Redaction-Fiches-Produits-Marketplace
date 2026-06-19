@@ -226,6 +226,9 @@ def _section_label(texte: str):
       ">{texte}</span>
     </div>
     """)
+
+
+def afficher_bloc_conformite(titre: str, score: float, checks, cle_expander: str):
     """Bloc réutilisé pour le texte ET l'image : note + icône + détail dépliable."""
     st.markdown("---")
     st.subheader(titre)
@@ -300,8 +303,8 @@ def render_result(raw_input: dict, listing: dict):
             f"{', '.join(suggerees_noms[:3])}. Tu peux quand même générer l'export."
         )
 
-    if not marketplaces_selectionnees and not export_shopping:
-        st.info("Aucune marketplace ou outil sélectionné — coche au moins une option en haut de page.")
+    if not marketplaces_selectionnees:
+        st.info("Aucune marketplace sélectionnée — coche au moins une option en haut de page.")
     else:
         exports = generer_exports_marketplaces(
             raw_input, listing, marketplaces_selectionnees,
@@ -405,63 +408,38 @@ def parser_urls(texte: str) -> list:
 # Onglet 1 : fiche unique
 # ---------------------------------------------------------------------
 with tab_single:
-    st.caption("* champs obligatoires")
 
-    # ── Logo cards marketplaces (visuels) ─────────────────────────
+    # ── Sélection des marketplaces avec logos + cases à cocher ─────────
     MARKETPLACE_META = [
-        ("amazon",          "Amazon",          "#FF9900", "amazon.fr"),
-        ("cdiscount",       "Cdiscount",       "#E84D0E", "cdiscount.com"),
-        ("fnac_darty",      "Fnac Darty",      "#E1A500", "fnac.com"),
-        ("leroy_merlin",    "Leroy Merlin",    "#78B843", "leroymerlin.fr"),
-        ("maisons_du_monde","Maisons du Monde","#8B6F5E", "maisonsdumonde.com"),
+        ("amazon",           "Amazon",           "#FF9900", "amazon.fr",             True),
+        ("cdiscount",        "Cdiscount",        "#E84D0E", "cdiscount.com",        True),
+        ("fnac_darty",       "Fnac Darty",       "#E1A500", "fnac.com",             False),
+        ("leroy_merlin",     "Leroy Merlin",     "#78B843", "leroymerlin.fr",      False),
+        ("maisons_du_monde", "Maisons du Monde", "#8B6F5E", "maisonsdumonde.com",  False),
     ]
 
-    cards_html = """
-    <div style="
-      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;
-    ">"""
-    for key, name, color, domain in MARKETPLACE_META:
-        favicon = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=64"
-        cards_html += f"""
-      <div style="
-        display:flex; align-items:center; gap:8px;
-        background:#252B35;
-        border:1px solid #2E3545;
-        border-top:2px solid {color};
-        border-radius:8px;
-        padding:9px 13px;
-      ">
-        <img src="{favicon}"
-             style="width:18px;height:18px;border-radius:3px;object-fit:contain;"
-             onerror="this.style.display='none'" />
-        <span style="
-          font-family:'DM Sans',sans-serif;
-          font-size:0.75rem;
-          font-weight:600;
-          color:{color};
-          letter-spacing:0.01em;
-        ">{name}</span>
-      </div>"""
-    cards_html += "\n    </div>"
-    st.html(cards_html)
+    _section_label("Marketplaces cibles")
+    st.caption("Coche les marketplaces pour lesquelles tu veux générer un export.")
 
-    # ── Pills de sélection ────────────────────────────────────────
-    MP_OPTIONS  = ["Amazon", "Cdiscount", "Fnac Darty", "Leroy Merlin", "Maisons du Monde"]
-    MP_TO_KEY   = {
-        "Amazon":           "amazon",
-        "Cdiscount":        "cdiscount",
-        "Fnac Darty":       "fnac_darty",
-        "Leroy Merlin":     "leroy_merlin",
-        "Maisons du Monde": "maisons_du_monde",
-    }
-    selected_pills = st.pills(
-        "Sélectionne tes marketplaces cibles",
-        MP_OPTIONS,
-        selection_mode="multi",
-        default=["Amazon", "Cdiscount"],
-        key="mp_pills",
-    )
+    marketplace_cols = st.columns(len(MARKETPLACE_META))
+    selected_marketplaces = []
+
+    for col, (key, name, color, domain, default_checked) in zip(marketplace_cols, MARKETPLACE_META):
+        favicon = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=64"
+        with col:
+            st.html(f"""
+            <div class="marketplace-card" style="border-top-color:{color};">
+              <img src="{favicon}"
+                   style="width:22px;height:22px;border-radius:4px;object-fit:contain;"
+                   onerror="this.style.display='none'" />
+              <span style="color:{color};">{name}</span>
+            </div>
+            """)
+            if st.checkbox(name, value=default_checked, key=f"mp_{key}"):
+                selected_marketplaces.append(key)
+
     st.markdown("---")
+
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -509,6 +487,7 @@ with tab_single:
                 help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
             )
 
+        st.caption("* champs obligatoires")
         submitted = st.form_submit_button("🚀 Générer la fiche optimisée", type="primary")
 
     if submitted:
@@ -525,7 +504,7 @@ with tab_single:
                 "images_secondaires": parser_urls(images_secondaires_brut),
                 "sku": sku,
                 "fabricant": fabricant,
-                "marketplaces": [MP_TO_KEY[n] for n in (selected_pills or [])],
+                "marketplaces": selected_marketplaces,
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)
