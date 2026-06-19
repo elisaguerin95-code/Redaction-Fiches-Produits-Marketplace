@@ -30,7 +30,6 @@ from export_cdiscount import generer_ligne_export_cdiscount
 from export_fnac_darty import generer_ligne_export_fnac_darty
 from export_leroy_merlin import generer_ligne_export_leroy_merlin
 from export_maisons_du_monde import generer_ligne_export_maisons_du_monde
-from export_shopping_feed import generer_flux_shopping_feed
 from marketplace_registry import (
     get_marketplaces_suggereees, get_marketplace_info, MARKETPLACES
 )
@@ -144,9 +143,8 @@ MARKETPLACES_SUPPORTEES = ["amazon", "cdiscount", "fnac_darty", "leroy_merlin", 
 
 def generer_exports_marketplaces(raw_input: dict, listing: dict,
                                   marketplaces_selectionnees: list,
-                                  image_url: str, images_secondaires: list,
-                                  export_shopping: bool = False) -> dict:
-    """Génère les fichiers d'export pour chaque marketplace + flux Google Shopping."""
+                                  image_url: str, images_secondaires: list) -> dict:
+    """Génère les fichiers d'export pour chaque marketplace sélectionnée."""
     exports = {}
     for cle in marketplaces_selectionnees:
         if cle == "amazon":
@@ -164,9 +162,6 @@ def generer_exports_marketplaces(raw_input: dict, listing: dict,
         elif cle == "maisons_du_monde":
             exports["maisons_du_monde"] = pd.DataFrame([generer_ligne_export_maisons_du_monde(
                 raw_input, listing, image_url=image_url, images_secondaires=images_secondaires)])
-    if export_shopping:
-        exports["shopping_feed"] = pd.DataFrame([generer_flux_shopping_feed(
-            raw_input, listing, image_url=image_url, images_secondaires=images_secondaires)])
     return exports
 
 
@@ -177,7 +172,6 @@ def render_result(raw_input: dict, listing: dict):
     images_secondaires = raw_input.get("images_secondaires", [])
     categorie = listing.get("category_suggestion", "Autre")
     marketplaces_selectionnees = raw_input.get("marketplaces", ["amazon"])
-    export_shopping = raw_input.get("export_shopping", False)
 
     # --- Section exports ---
     st.markdown("---")
@@ -207,7 +201,7 @@ def render_result(raw_input: dict, listing: dict):
     else:
         exports = generer_exports_marketplaces(
             raw_input, listing, marketplaces_selectionnees,
-            image_url, images_secondaires, export_shopping,
+            image_url, images_secondaires,
         )
         tous_les_exports = list(exports.keys())
         if tous_les_exports:
@@ -322,17 +316,6 @@ with tab_single:
     with mp_cols[4]:
         sel_mdm = st.checkbox("🛋️ Maisons du Monde", value=False, key="single_mdm")
 
-    st.markdown("**🛠️ Outils e-commerce**")
-    st.caption(
-        "Compatible ShoppingFeed, Lengow, Channable... — "
-        "importe ce flux une fois dans votre outil, il distribue automatiquement "
-        "vers toutes vos marketplaces connectées."
-    )
-    sel_shopping = st.checkbox(
-        "🔄 Flux Google Shopping (format universel)",
-        value=False, key="single_shopping",
-    )
-
     st.markdown("---")
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
@@ -406,7 +389,6 @@ with tab_single:
                         ("maisons_du_monde", sel_mdm),
                     ] if sel
                 ],
-                "export_shopping": sel_shopping,
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)

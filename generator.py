@@ -55,6 +55,120 @@ def _charger_categories_amazon() -> dict:
 DICTIONNAIRE_GENRE = _charger_dictionnaire_genre()
 CATEGORIES_AMAZON = _charger_categories_amazon()
 
+# ---------------------------------------------------------------------
+# Niveau 1 : expressions composées (2-3 mots) — priorité absolue
+# car le contexte change tout ("table" ≠ "table de jardin").
+# Croisées sur Amazon, Leroy Merlin, Maisons du Monde et Cdiscount.
+# La recherche se fait SANS accents pour la tolérance à la saisie.
+# ---------------------------------------------------------------------
+
+EXPRESSIONS_COMPOSEES = {
+    # Jardin & Extérieur
+    "salon de jardin":      "Jardin & Extérieur",
+    "mobilier de jardin":   "Jardin & Extérieur",
+    "table de jardin":      "Jardin & Extérieur",
+    "chaise de jardin":     "Jardin & Extérieur",
+    "canape de jardin":     "Jardin & Extérieur",
+    "fauteuil de jardin":   "Jardin & Extérieur",
+    "bain de soleil":       "Jardin & Extérieur",
+    "transat de jardin":    "Jardin & Extérieur",
+    "parasol de jardin":    "Jardin & Extérieur",
+    "jardiniere de balcon": "Jardin & Extérieur",
+    "pot de jardin":        "Jardin & Extérieur",
+    "abri de jardin":       "Jardin & Extérieur",
+    "terrasse jardin":      "Jardin & Extérieur",
+
+    # Mobilier & Décoration
+    "table basse":          "Mobilier & Décoration",
+    "table haute":          "Mobilier & Décoration",
+    "table a manger":       "Mobilier & Décoration",
+    "table de salon":       "Mobilier & Décoration",
+    "table de chevet":      "Mobilier & Décoration",
+    "canape angle":         "Mobilier & Décoration",
+    "canape convertible":   "Mobilier & Décoration",
+    "canape lit":           "Mobilier & Décoration",
+    "lit double":           "Mobilier & Décoration",
+    "lit simple":           "Mobilier & Décoration",
+    "lit enfant":           "Mobilier & Décoration",
+    "cadre de lit":         "Mobilier & Décoration",
+    "tete de lit":          "Mobilier & Décoration",
+
+    # Électroménager
+    "micro ondes":          "Électroménager",
+    "four micro":           "Électroménager",
+    "lave vaisselle":       "Électroménager",
+    "lave linge":           "Électroménager",
+    "seche linge":          "Électroménager",
+    "robot cuiseur":        "Électroménager",
+    "robot patissier":      "Électroménager",
+    "machine a cafe":       "Électroménager",
+    "machine expresso":     "Électroménager",
+    "four encastrable":     "Électroménager",
+    "plaque induction":     "Électroménager",
+    "hotte aspirante":      "Électroménager",
+    "refrigerateur congelateur": "Électroménager",
+
+    # Bricolage & Outillage
+    "perceuse visseuse":    "Bricolage & Outillage",
+    "scie circulaire":      "Bricolage & Outillage",
+    "ponceuse orbitale":    "Bricolage & Outillage",
+
+    # High-Tech
+    "ecran plat":           "High-Tech",
+    "television led":       "High-Tech",
+    "clavier sans fil":     "High-Tech",
+    "souris sans fil":      "High-Tech",
+    "disque dur":           "High-Tech",
+    "cle usb":              "High-Tech",
+    "carte memoire":        "High-Tech",
+}
+
+# Niveau 2 : corrections des mots simples systématiquement mal classés
+# dans le JSON Amazon (ambigüités résolues par croisement inter-marketplaces).
+CORRECTIONS_MOTS = {
+    # Mobilier : Amazon les met dans Cuisine ou Électroménager à tort
+    "table":        "Mobilier & Décoration",
+    "salon":        "Mobilier & Décoration",
+    "canape":       "Mobilier & Décoration",
+    "fauteuil":     "Mobilier & Décoration",
+    "buffet":       "Mobilier & Décoration",
+    "commode":      "Mobilier & Décoration",
+    "armoire":      "Mobilier & Décoration",
+    "bibliotheque": "Mobilier & Décoration",
+    "etagere":      "Mobilier & Décoration",
+    "bureau":       "Mobilier & Décoration",
+    "chaise":       "Mobilier & Décoration",
+    "tabouret":     "Mobilier & Décoration",
+    "banc":         "Mobilier & Décoration",
+    "lit":          "Mobilier & Décoration",
+    "matelas":      "Mobilier & Décoration",
+    "sommier":      "Mobilier & Décoration",
+    # Électroménager : Amazon les met dans Cuisine & Maison à tort
+    "climatiseur":  "Électroménager",
+    "ventilateur":  "Électroménager",
+    "deshumidificateur": "Électroménager",
+    "humidificateur": "Électroménager",
+    "radiateur":    "Électroménager",
+    "poele":        "Électroménager",
+    "plaque":       "Électroménager",
+    "hotte":        "Électroménager",
+    "congelateur":  "Électroménager",
+    "refrigerateur": "Électroménager",
+    "frigo":        "Électroménager",
+    "lave":         "Électroménager",
+    "seche":        "Électroménager",
+    # Bricolage
+    "perceuse":     "Bricolage & Outillage",
+    "visseuse":     "Bricolage & Outillage",
+    "scie":         "Bricolage & Outillage",
+    "ponceuse":     "Bricolage & Outillage",
+    "meuleuse":     "Bricolage & Outillage",
+    "marteau":      "Bricolage & Outillage",
+    "tournevis":    "Bricolage & Outillage",
+    "niveau":       "Bricolage & Outillage",
+    "echelle":      "Bricolage & Outillage",
+}
+
 
 def deviner_genre(type_produit: str) -> str | None:
     """
@@ -343,25 +457,38 @@ def dedupliquer_caracteristiques(caracteristiques: list[str], materiau: str,
 
 def detecter_categorie_et_genre(type_produit: str, infos_produits: str) -> tuple[str, str | None]:
     """
-    Détecte la catégorie Amazon (via 6 700+ mots-clés extraits du Browse
-    Tree Mappings officiel Amazon FR) et le genre grammatical (via LEFFF).
-    """
-    # Recherche dans le type_produit mot par mot (sans accents pour tolérance)
-    type_produit_na = _sans_accents(type_produit.lower())
-    categorie = "Autre"
+    Détecte la catégorie Amazon et le genre grammatical du produit.
 
-    # On teste d'abord les mots du type_produit, puis les infos_produits
-    for texte in [type_produit_na, _sans_accents(infos_produits.lower())]:
+    Ordre de priorité (s'arrête au premier résultat trouvé) :
+    1. Expressions composées (2-3 mots) — contexte primant sur le mot seul
+       ex : "salon de jardin" → Jardin & Extérieur (pas Cuisine & Maison)
+    2. Corrections de mots simples ambigus (table, canapé, climatiseur...)
+       croisées sur Amazon, Leroy Merlin, MdM et Cdiscount
+    3. Dictionnaire JSON issu du Browse Tree Mappings Amazon (6 700 mots-clés)
+    4. "Autre" si aucun des trois niveaux ne matche
+    """
+    type_na = _sans_accents(type_produit.lower().strip())
+    texte_complet_na = _sans_accents((type_produit + " " + infos_produits).lower())
+
+    # Niveau 1 : expressions composées (le plus prioritaire)
+    for expression, categorie in EXPRESSIONS_COMPOSEES.items():
+        if expression in type_na:
+            return categorie, deviner_genre(type_produit)
+
+    # Niveau 2 : mots simples connus comme ambigus dans Amazon
+    for mot in type_na.split():
+        mot_propre = mot.strip(",.;:!?()")
+        if mot_propre in CORRECTIONS_MOTS:
+            return CORRECTIONS_MOTS[mot_propre], deviner_genre(type_produit)
+
+    # Niveau 3 : dictionnaire JSON Browse Tree Mappings Amazon
+    for texte in [type_na, texte_complet_na]:
         for mot in texte.split():
             mot_propre = mot.strip(",.;:!?()")
             if mot_propre in CATEGORIES_AMAZON:
-                categorie = CATEGORIES_AMAZON[mot_propre]
-                break
-        if categorie != "Autre":
-            break
+                return CATEGORIES_AMAZON[mot_propre], deviner_genre(type_produit)
 
-    genre = deviner_genre(type_produit)
-    return categorie, genre
+    return "Autre", deviner_genre(type_produit)
 
 
 def extraire_valeur_numerique(infos_produits: str) -> tuple[str, str] | tuple[None, None]:
