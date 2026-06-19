@@ -17,6 +17,7 @@ image est fournie.
 """
 
 import io
+import os
 from datetime import datetime
 
 import streamlit as st
@@ -39,6 +40,133 @@ st.set_page_config(
     page_icon="🏷️",
     layout="wide",
 )
+
+# ── Injection CSS ────────────────────────────────────────────────
+def _inject_styles():
+    css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
+    with open(css_path, encoding="utf-8") as f:
+        css = f.read()
+    st.html(f"<style>{css}</style>")
+
+_inject_styles()
+
+# ── Hero header (HTML custom, pas st.title générique) ───────────
+st.html("""
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+</style>
+
+<div style="
+  position: relative;
+  padding: 2.5rem 0 2rem;
+  border-bottom: 1px solid #2E3545;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+">
+
+  <!-- Dot pattern -->
+  <div style="
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(58,68,85,0.9) 1px, transparent 1px);
+    background-size: 22px 22px;
+    opacity: 0.6;
+    pointer-events: none;
+  "></div>
+
+  <!-- Gradient fade sur les bords -->
+  <div style="
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      #1E2128 0%,
+      transparent 25%,
+      transparent 75%,
+      #1E2128 100%
+    );
+    pointer-events: none;
+  "></div>
+
+  <!-- SVG étiquettes produit — décoration droite -->
+  <div style="position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); opacity: 0.18; pointer-events: none;">
+    <svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">
+
+      <!-- Étiquette principale -->
+      <g transform="rotate(-12, 60, 60)">
+        <path d="M30,18 L30,95 Q30,102 37,102 L83,102 Q90,102 90,95 L90,18 Q90,11 83,11 L37,11 Q30,11 30,18 Z"
+              fill="none" stroke="#C4606E" stroke-width="1.5"/>
+        <circle cx="60" cy="6" r="4.5" fill="none" stroke="#C4606E" stroke-width="1.5"/>
+        <line x1="60" y1="1.5" x2="60" y2="11" stroke="#C4606E" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="60" y="60" text-anchor="middle"
+              font-family="DM Serif Display, Georgia, serif"
+              font-style="italic" font-size="15" fill="#C4606E">✦</text>
+        <!-- Barcode simulé -->
+        <line x1="37" y1="76" x2="37" y2="89" stroke="#C4606E" stroke-width="2.5"/>
+        <line x1="41" y1="76" x2="41" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <line x1="44" y1="76" x2="44" y2="89" stroke="#C4606E" stroke-width="3"/>
+        <line x1="48" y1="76" x2="48" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <line x1="51" y1="76" x2="51" y2="89" stroke="#C4606E" stroke-width="2"/>
+        <line x1="55" y1="76" x2="55" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <line x1="58" y1="76" x2="58" y2="89" stroke="#C4606E" stroke-width="3"/>
+        <line x1="62" y1="76" x2="62" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <line x1="65" y1="76" x2="65" y2="89" stroke="#C4606E" stroke-width="2"/>
+        <line x1="69" y1="76" x2="69" y2="89" stroke="#C4606E" stroke-width="1.5"/>
+        <line x1="72" y1="76" x2="72" y2="89" stroke="#C4606E" stroke-width="2.5"/>
+        <line x1="76" y1="76" x2="76" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <line x1="79" y1="76" x2="79" y2="89" stroke="#C4606E" stroke-width="2"/>
+        <line x1="83" y1="76" x2="83" y2="89" stroke="#C4606E" stroke-width="1"/>
+      </g>
+
+      <!-- Étiquette secondaire décalée -->
+      <g transform="rotate(8, 130, 50) translate(85, 5)">
+        <path d="M10,15 L10,75 Q10,80 15,80 L55,80 Q60,80 60,75 L60,15 Q60,10 55,10 L15,10 Q10,10 10,15 Z"
+              fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.7"/>
+        <circle cx="35" cy="5" r="3.5" fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.7"/>
+        <line x1="35" y1="1.5" x2="35" y2="10" stroke="#D4826E" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
+        <line x1="17" y1="30" x2="53" y2="30" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+        <line x1="17" y1="40" x2="45" y2="40" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+        <line x1="17" y1="50" x2="50" y2="50" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+      </g>
+
+    </svg>
+  </div>
+
+  <!-- Contenu texte -->
+  <div style="position: relative; z-index: 1;">
+    <p style="
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #C4606E;
+      margin: 0 0 0.5rem;
+    ">✦ &nbsp; Outil catalogue marketplace</p>
+
+    <h1 style="
+      font-family: 'DM Serif Display', Georgia, serif;
+      font-size: 2.25rem;
+      font-weight: 400;
+      color: #F4F1EA;
+      margin: 0 0 0.6rem;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    ">Création Fiche Produit<br>
+    <em style="color: #8A9BB0; font-style: italic;">Marketplace</em></h1>
+
+    <p style="
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      color: #6E7A8A;
+      margin: 0;
+      max-width: 460px;
+      line-height: 1.65;
+    ">Une saisie, plusieurs exports — Amazon, Cdiscount, Fnac Darty,<br>Leroy Merlin et Maisons du Monde.</p>
+  </div>
+
+</div>
+""")
 
 # ---------------------------------------------------------------------
 # Constantes d'affichage
@@ -112,12 +240,6 @@ st.sidebar.caption(
 # ---------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------
-st.title("🏷️ Création Fiche Produit Marketplace")
-st.caption(
-    "Transforme des infos produit brutes en fiches optimisées et conformes "
-    "pour Amazon, Cdiscount et Fnac Darty — une saisie, plusieurs exports."
-)
-
 tab_single, tab_batch, tab_historique = st.tabs(["Fiche unique", "Lot (Excel)", "Historique"])
 
 
