@@ -1,142 +1,146 @@
-# Création Fiche Produit Marketplace
+# 🏷️ Création Fiche Produit Marketplace
 
-Outil d'aide à la création de fiches produits pour vendeurs marketplace :
-à partir d'une **matrice Excel à 6 colonnes**, facile à remplir par les
-équipes, génère une fiche Amazon optimisée (titre, Item Highlights,
-bullet points, description marketing, mots-clés back-end), un score de
-conformité, les attributs techniques propres à la catégorie Amazon
-détectée, une **vérification de conformité de l'image produit**, et un
-**export prêt à copier-coller dans le vrai template Amazon**.
+Outil d'aide à la création de fiches produits pour vendeurs marketplace, développé lors d'un datathon de 48h (Mission Data — Wild Code School / Simplon).
 
-Génération 100% déterministe : aucun appel à une IA générative externe,
-aucune clé API requise.
+**Une saisie, plusieurs exports.** À partir d'une matrice Excel simple, génère en quelques secondes des fiches optimisées et conformes pour Amazon, Cdiscount et Fnac Darty — avec score de conformité instantané et un fichier d'export par marketplace.
 
-## Architecture
+> 🔗 **Application en ligne** : [à compléter après déploiement]
 
-- `rules.py` — moteur de conformité texte : vérifie une fiche par rapport
-  aux règles Amazon (titre 75 car., bullets, description, mots-clés...).
-- `generator.py` — génère la fiche + détecte catégorie/genre grammatical
-  + devine les attributs techniques spécifiques à la catégorie.
-- `image_check.py` — vérifie la conformité d'une image produit (format,
-  poids, dimensions, ratio, fond blanc) à partir de son URL.
-- `export_amazon.py` — construit une ligne au format flat-file Amazon
-  (colonnes standards), à partir d'une fiche déjà générée.
-- `app.py` — interface Streamlit (fiche unique + traitement par lot Excel).
-- `data/genre_noms_fr.csv` — dictionnaire de 41 902 noms français avec
-  leur genre grammatical (lexique LEFFF), utilisé pour écrire "un"/"une"
-  correctement dans la description.
-- `sample_data/produits_demo.xlsx` — 5 produits pour la démo du pitch.
+---
 
-## Format de la matrice (colonnes attendues)
+## 📋 Description
 
-`marque` **(obligatoire)**, `type_produit` **(obligatoire)**, `materiau`,
-`couleur`, `infos_produits` (infos libres séparées par des virgules),
-`image_url` (image principale, déjà hébergée en ligne), `images_secondaires`
-(URLs séparées par des virgules, optionnel). Un modèle Excel est
-téléchargeable directement depuis l'application (onglet "Lot"). En lot,
-toute ligne sans marque ou type de produit est ignorée (et comptée dans
-un message récapitulatif).
+La valeur ajoutée n'est pas sur un seul produit — c'est à l'**échelle** et sur **plusieurs marketplaces** que l'outil prend tout son sens. Un vendeur remplit sa matrice une fois, et l'outil génère automatiquement les exports dans le bon format pour chaque canal de distribution ciblé.
 
-**Important sur "infos_produits" :** chaque information distincte doit
-être séparée par une virgule. Une phrase complète sans virgules sera
-traitée comme une seule information, qui risque d'être masquée si elle
-répète déjà le matériau, la couleur ou le type de produit (voir
-`dedupliquer_caracteristiques` dans `generator.py`).
+**Génération 100% déterministe** — aucun appel à une IA générative externe, aucune clé API requise. Le moteur applique des règles de texte, un pipeline NLP (nltk + lexique LEFFF), et des données officielles Amazon (Browse Tree Mappings FR) pour produire des résultats reproductibles et explicables.
 
-**Important sur les images :** elles doivent être déjà hébergées en
-ligne avec une URL d'accès direct. Un lien de partage Google Drive
-classique (```drive.google.com/file/d/.../view```) ne fonctionne pas
-tel quel : il faut un lien qui renvoie directement le fichier image.
+---
 
-## Image principale vs images secondaires
+## 📁 Structure du projet
 
-Amazon n'exige qu'une image obligatoire (la principale), mais autorise
-jusqu'à 9 images au total et la compétitivité d'une fiche en dépend en
-pratique. Seule l'image **principale** doit respecter les règles
-strictes (fond blanc, format carré) : les images **secondaires** sont
-beaucoup plus souples (lifestyle, infographies...) et ne sont vérifiées
-que sur le format, le poids et la résolution.
+| Fichier | Description |
+|---------|-------------|
+| `app.py` | Interface Streamlit (fiche unique + lot Excel + historique) |
+| `generator.py` | Génération de la fiche (titre, bullets, description, mots-clés) |
+| `rules.py` | Moteur de conformité Amazon (score /100) |
+| `nlp_extractor.py` | Pipeline NLP pour parser le texte libre sans virgules |
+| `image_check.py` | Vérification de conformité image (format, résolution, fond blanc) |
+| `marketplace_registry.py` | Mapping catégories → marketplaces suggérées |
+| `export_amazon.py` | Export au format flat-file Amazon |
+| `export_cdiscount.py` | Export au format Cdiscount Marketplace (Octopia) |
+| `export_fnac_darty.py` | Export au format Fnac Darty Portail Catalogue |
+| `data/genre_noms_fr.csv` | Lexique LEFFF — 41 902 noms français avec genre grammatical |
+| `data/categories_amazon_fr.json` | 6 700+ mots-clés → catégorie Amazon (Browse Tree Mappings FR) |
+| `sample_data/produits_demo.xlsx` | 5 produits de démonstration (un par catégorie) |
+| `requirements.txt` | Dépendances Python |
 
-## Vérification de conformité image
+---
 
-`image_check.py` télécharge l'image et vérifie (sans IA, juste de
-l'analyse d'image avec Pillow) : le format (JPEG/PNG/TIFF/GIF), le poids
-(max 10 Mo), la résolution minimale (1000px, idéalement 2000px pour le
-zoom), et pour l'image principale uniquement : le ratio carré recommandé
-et une estimation du fond blanc en testant les bords de l'image. Cette
-dernière vérification est une heuristique, pas une garantie à 100%.
+## ⚙️ Comment ça marche ?
 
-## Export façon Amazon
+### 1. Saisie des données
 
-**Point important :** les vrais flat files Amazon sont des templates
-propres à chaque catégorie, téléchargés depuis Seller Central — il
-n'existe pas de format universel qu'on puisse reproduire à l'identique
-sans cet accès. `export_amazon.py` construit donc un fichier avec les
-noms de colonnes standards communs à la plupart des templates
-(item_sku, item_name, brand_name, bullet_point1-5, product_description,
-generic_keywords, color_name, material_type, main_image_url,
-feed_product_type, + les attributs spécifiques à la catégorie détectée).
-Ce n'est pas un import direct, mais un fichier pensé pour être
-copié-collé dans le vrai template une fois téléchargé pour la bonne
-catégorie — c'est ce qui transforme le gain de temps en gain réel,
-au-delà du simple texte généré.
+Deux modes d'entrée :
+- **Fiche unique** : formulaire Streamlit (Marque\* et Type de produit\* obligatoires, reste optionnel dans une zone dépliable)
+- **Lot Excel** : matrice à 6 colonnes (`marque`, `type_produit`, `materiau`, `couleur`, `infos_produits`, `image_url`, `images_secondaires`)
 
-## Thème visuel
+Le champ `infos_produits` accepte **deux formats** :
+- Virgules : `750ml, garde le froid 24h, sans BPA, anse de transport`
+- Texte libre : `gourde isotherme 750ml garde le froid 24h sans BPA` → le pipeline NLP extrait automatiquement les caractéristiques
 
-`.streamlit/config.toml` applique un thème sombre cohérent avec
-l'identité visuelle existante (CV, portfolio) : fond quasi noir, accent
-terracotta/rose (#C4606E), texte crème. Modifiable directement dans ce
-fichier si besoin.
+### 2. Pipeline de génération
 
-## Historique des fiches générées
+```
+infos brutes
+    │
+    ├─ NLP (nltk + LEFFF)          → extraction si texte libre
+    ├─ detecter_categorie_et_genre → catégorie Amazon + genre grammatical
+    ├─ generer_titre               → 75 car. max (règle 2026)
+    ├─ generer_bullets             → 5 bullets (variantes par catégorie)
+    ├─ generer_description         → framework Amazon Problème→Solution→Conclusion
+    ├─ generer_backend_keywords    → 249 octets max, sans doublon titre
+    └─ generer_attributs_specifiques → attributs techniques par catégorie
+```
 
-Le 3ᵉ onglet ("Historique") liste les fiches générées pendant la
-session en cours (horodatage, marque, type de produit, titre généré,
-scores), avec export Excel. **Limite à connaître :** c'est un historique
-de session uniquement (stocké en mémoire via `st.session_state`), sans
-base de données — il est perdu si la page est fermée ou rechargée, et
-n'est pas partagé entre plusieurs utilisateurs.
+### 3. Moteur de conformité
 
-## Pourquoi la description gère "le/la" correctement (ou pas)
+`rules.py` vérifie chaque fiche contre les règles Amazon et retourne un score /100 avec le détail de chaque vérification (titre, highlights, bullets, description, mots-clés back-end, caractères interdits, mots promotionnels interdits).
 
-L'outil n'est pas une IA générative : il ne "comprend" pas le français,
-il applique des règles écrites à l'avance. Pour deviner le genre
-grammatical d'un produit, il s'appuie sur `data/genre_noms_fr.csv` — un
-dictionnaire de 41 902 noms communs français, extrait du lexique
-linguistique libre LEFFF (aucun appel réseau, juste une table de
-correspondance chargée une fois au démarrage). Si le mot n'est pas
-reconnu, la description bascule sur un style "accroche publicitaire"
-qui évite tout risque de faute d'accord.
+### 4. NLP maison (sans modèle externe)
 
-## Lancer en local
+`nlp_extractor.py` combine :
+- **nltk** — tokenisation française
+- **Lexique LEFFF** (déjà chargé pour les genres) — identification des noms communs
+- **Regex** — patterns techniques (dimensions, capacités, certifications, origines)
+
+Pas de spaCy, pas de modèle à télécharger : le pipeline est léger et fonctionne sur l'offre gratuite Streamlit Cloud.
+
+---
+
+## 🚀 Installation et lancement
+
+### En local
 
 ```bash
+git clone <url-du-repo>
+cd marketplace_copilot
 python -m venv venv
-source venv/bin/activate          # ou venv\Scripts\activate sous Windows
+source venv/bin/activate   # Windows : venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Déployer sur Streamlit Cloud
+### Déployer sur Streamlit Cloud
 
-1. Pousse ce dossier sur un repo GitHub
-2. Sur https://share.streamlit.io, "New app" > sélectionne le repo et `app.py`
-3. Déploie — pas de secrets à configurer, l'app n'a aucune dépendance externe
+1. Pousser le repo sur GitHub
+2. Sur [share.streamlit.io](https://share.streamlit.io) : **New app** → sélectionner le repo → fichier `app.py`
+3. Déployer — pas de secrets à configurer, aucune clé API nécessaire
 
-## Tester un module seul
+---
 
-```bash
-python rules.py          # exemple de fiche notée par le moteur de conformité texte
-python generator.py      # deux exemples (genre connu / inconnu)
-python image_check.py    # vérification image sur 2 images de test générées localement
-python export_amazon.py  # exemple de ligne d'export Amazon
-```
+## 📊 Catégories couvertes
 
-## Pistes Vision V2 (pour le pitch)
+Détection automatique depuis le fichier officiel Amazon Browse Tree Mappings FR (24 univers, 16 386 chemins de catégorie) :
 
-- Étendre `MOTS_CLES_PRODUIT` et `ATTRIBUTS_BOOLEENS_PAR_CATEGORIE` à
-  davantage de catégories et de produits
-- Support multi-marketplace (Cdiscount, Fnac Darty...)
-- Remplacer le dictionnaire de catégories par un vrai modèle de
-  classification entraîné (V1 volontairement simple et explicable)
+| Catégorie | Exemples de produits |
+|-----------|---------------------|
+| Cuisine & Maison | Bouilloire, gourde, ustensile |
+| Électroménager | Aspirateur, four, climatiseur |
+| High-Tech | Écouteurs, casque, câble |
+| Sport & Plein air | Sac de randonnée, gourde sport |
+| Bagagerie & Voyage | Valise, sac à dos de ville |
+| Animalerie | Gamelle, jouet, laisse |
+| Maison & Luminaire | Lampe, ampoule, plafonnier |
+| Beauté & Santé | Shampoing, crème, brosse |
+| Mode & Vêtements | T-shirt, robe, veste |
+| … | 15 autres univers |
+
+> ⚠️ **Limite connue** : le mobilier (tables, chaises, canapés) n'est pas dans le fichier Amazon fourni → ces produits tombent dans la catégorie "Autre".
+
+---
+
+## ⚠️ Limites connues (V1)
+
+| Limite | Explication |
+|--------|-------------|
+| Genre grammatical | Le programme ne comprend pas le français : il consulte un dictionnaire (LEFFF). Si le mot n'y est pas, il bascule sur un style accroche sans accord. |
+| NLP texte libre | Le pipeline (nltk + LEFFF) extrait les noms communs reconnus. Les adjectifs seuls ou les termes très techniques peuvent être manqués. |
+| Historique | Stocké en mémoire (session Streamlit) — perdu à la fermeture de l'onglet. |
+| Images | La vérification du fond blanc est une heuristique (test des coins) — pas une garantie à 100%. |
+| Export Amazon | Colonnes standards communes à la plupart des catégories. Le vrai flat file (propre à chaque catégorie) se télécharge sur Seller Central. |
+
+---
+
+## 🔭 Vision V2
+
+- Étendre les templates marketing à toutes les catégories couvertes
+- Support multi-marketplace (Cdiscount, Fnac Darty, Zalando...)
+- Remplacer la détection de catégorie par un modèle de classification entraîné
 - Suggestions de mots-clés SEO par analyse concurrentielle
+- Historique persistant (base de données légère)
+
+---
+
+## 👩‍💻 Auteur
+
+Projet réalisé par **Elisa Guérin** dans le cadre du datathon Mission Data — Wild Code School / Simplon (juin 2026).

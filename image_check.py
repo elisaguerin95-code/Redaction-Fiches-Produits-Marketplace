@@ -30,14 +30,31 @@ DIMENSION_RECOMMANDEE = 2000
 TOLERANCE_BLANC = 12  # écart toléré par canal de couleur par rapport à 255
 
 
+HEADERS_REQUETE = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    )
+}
+
+
 def _telecharger_image(url: str) -> tuple[bytes, str]:
     """Télécharge le contenu de l'image. Retourne (contenu, erreur)."""
     try:
-        reponse = requests.get(url, timeout=10)
+        reponse = requests.get(url, timeout=10, headers=HEADERS_REQUETE)
         reponse.raise_for_status()
-        return reponse.content, None
     except Exception as e:
         return None, f"Impossible de récupérer l'image ({e})"
+
+    type_contenu = reponse.headers.get("content-type", "")
+    if not type_contenu.startswith("image/"):
+        return None, (
+            f"Cette URL ne renvoie pas une image directe (type reçu : '{type_contenu}'). "
+            "C'est probablement l'adresse d'une page produit et non celle du fichier image : "
+            "fais un clic droit sur la photo elle-même puis 'Copier l'adresse de l'image'."
+        )
+
+    return reponse.content, None
 
 
 def _fond_est_blanc(image: Image.Image) -> bool:

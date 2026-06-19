@@ -256,6 +256,16 @@ def check_description(description: str) -> list[CheckResult]:
 
 def check_backend_keywords(keywords: str, title: str) -> list[CheckResult]:
     results = []
+
+    if not keywords or not keywords.strip():
+        return [CheckResult(
+            "Mots-clés back-end",
+            False,
+            "Champ vide : aucun mot-clé ne sera indexé par Amazon. "
+            "Renseigne matériau, couleur ou infos produits pour générer des mots-clés.",
+            0, 20,
+        )]
+
     byte_length = len(keywords.encode("utf-8"))
 
     if byte_length <= BACKEND_KEYWORDS_MAX_BYTES:

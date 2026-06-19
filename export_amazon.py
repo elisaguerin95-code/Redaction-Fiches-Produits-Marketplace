@@ -34,15 +34,20 @@ def generer_ligne_export_amazon(raw_input: dict, listing: dict, image_url: str =
     sont ajoutés comme colonnes supplémentaires, ainsi que les images
     secondaires (other_image_url1, 2...) si fournies.
     """
+    sku_final = raw_input.get("sku", "").strip() or generer_sku(
+        raw_input.get("marque", ""), raw_input.get("type_produit", ""), indice
+    )
+    fabricant_final = raw_input.get("fabricant", "").strip() or raw_input.get("marque", "")
+
     bullets = listing.get("bullets", [])
-    bullets_completes = bullets + [""] * (5 - len(bullets))  # sécurité si moins de 5
+    bullets_completes = bullets + [""] * (5 - len(bullets))
     images_secondaires = images_secondaires or []
 
     ligne = {
-        "item_sku": generer_sku(raw_input.get("marque", ""), raw_input.get("type_produit", ""), indice),
+        "item_sku": sku_final,
         "item_name": listing.get("title", ""),
         "brand_name": raw_input.get("marque", ""),
-        "manufacturer": raw_input.get("marque", ""),
+        "manufacturer": fabricant_final,
         "bullet_point1": bullets_completes[0],
         "bullet_point2": bullets_completes[1],
         "bullet_point3": bullets_completes[2],

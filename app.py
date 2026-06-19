@@ -26,6 +26,11 @@ from generator import generer_fiche
 from rules import evaluate_listing
 from image_check import verifier_image
 from export_amazon import generer_ligne_export_amazon
+from export_cdiscount import generer_ligne_export_cdiscount
+from export_fnac_darty import generer_ligne_export_fnac_darty
+from marketplace_registry import (
+    get_marketplaces_suggereees, get_marketplace_info, MARKETPLACES
+)
 
 st.set_page_config(
     page_title="Création Fiche Produit Marketplace",
@@ -107,8 +112,8 @@ st.sidebar.caption(
 # ---------------------------------------------------------------------
 st.title("🏷️ Création Fiche Produit Marketplace")
 st.caption(
-    "Transforme des infos produit brutes en fiche Amazon optimisée et "
-    "conforme, avec score de conformité instantané."
+    "Transforme des infos produit brutes en fiches optimisées et conformes "
+    "pour Amazon, Cdiscount et Fnac Darty — une saisie, plusieurs exports."
 )
 
 tab_single, tab_batch, tab_historique = st.tabs(["Fiche unique", "Lot (Excel)", "Historique"])
@@ -131,25 +136,80 @@ def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expande
             st.markdown(f"{icon} **{label}** — {detail}")
 
 
+def generer_exports_marketplaces(raw_input: dict, listing: dict,
+                                  marketplaces_selectionnees: list,
+                                  image_url: str, images_secondaires: list) -> dict:
+    """Génère les fichiers d'export pour chaque marketplace sélectionnée."""
+    exports = {}
+    for cle in marketplaces_selectionnees:
+        if cle == "amazon":
+            ligne = generer_ligne_export_amazon(
+                raw_input, listing, image_url=image_url,
+                images_secondaires=images_secondaires,
+            )
+            exports["amazon"] = pd.DataFrame([ligne])
+        elif cle == "cdiscount":
+            ligne = generer_ligne_export_cdiscount(raw_input, listing, image_url=image_url)
+            exports["cdiscount"] = pd.DataFrame([ligne])
+        elif cle == "fnac_darty":
+            ligne = generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url)
+            exports["fnac_darty"] = pd.DataFrame([ligne])
+    return exports
+
+
 def render_result(raw_input: dict, listing: dict):
     """Affiche l'export, le avant/après, le score de conformité et l'image pour une fiche."""
     report = evaluate_listing(listing)
     image_url = raw_input.get("image_url", "")
     images_secondaires = raw_input.get("images_secondaires", [])
+    categorie = listing.get("category_suggestion", "Autre")
 
-    # --- Export façon Amazon : tout en haut, directement visible ---
-    ligne_export = generer_ligne_export_amazon(
-        raw_input, listing, image_url=image_url, images_secondaires=images_secondaires
+    # --- Sélecteur de marketplaces (pré-cochées selon la catégorie détectée) ---
+    st.markdown("---")
+    st.subheader("📤 Exporter vers les marketplaces")
+    st.caption(
+        f"Marketplaces suggérées pour la catégorie **{categorie}** détectée. "
+        "Coche celles qui t'intéressent et télécharge un fichier par marketplace."
     )
-    export_df = pd.DataFrame([ligne_export])
-    export_buffer = io.BytesIO()
-    export_df.to_excel(export_buffer, index=False, engine="openpyxl")
-    st.download_button(
-        "📤 Télécharger l'export façon Amazon (à copier-coller dans le vrai template)",
-        data=export_buffer.getvalue(),
-        file_name="export_amazon.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
+
+    marketplaces_suggerees = get_marketplaces_suggereees(categorie)
+    marketplaces_supportees = ["amazon", "cdiscount", "fnac_darty"]
+
+    marketplaces_selectionnees = []
+    cols = st.columns(len(marketplaces_supportees))
+    for idx, cle in enumerate(marketplaces_supportees):
+        info = get_marketplace_info(cle)
+        pre_coche = cle in marketplaces_suggerees
+        with cols[idx]:
+            selectionne = st.checkbox(
+                f"{info.get('emoji', '')} {info.get('nom', cle)}",
+                value=pre_coche,
+                key=f"mp_{cle}",
+                help=info.get("note", ""),
+            )
+            if selectionne:
+                marketplaces_selectionnees.append(cle)
+                if info.get("ean_obligatoire") and not raw_input.get("ean", ""):
+                    st.caption("⚠️ EAN obligatoire")
+
+    if marketplaces_selectionnees:
+        exports = generer_exports_marketplaces(
+            raw_input, listing, marketplaces_selectionnees,
+            image_url, images_secondaires,
+        )
+        dl_cols = st.columns(len(marketplaces_selectionnees))
+        for idx, cle in enumerate(marketplaces_selectionnees):
+            info = get_marketplace_info(cle)
+            buf = io.BytesIO()
+            exports[cle].to_excel(buf, index=False, engine="openpyxl")
+            with dl_cols[idx]:
+                st.download_button(
+                    f"⬇️ {info.get('nom', cle)}",
+                    data=buf.getvalue(),
+                    file_name=f"export_{cle}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"dl_{cle}",
+                )
 
     st.markdown("---")
     col_before, col_after = st.columns(2)
@@ -235,45 +295,55 @@ with tab_single:
         c1, c2 = st.columns(2)
         with c1:
             brand = st.text_input("Marque *", placeholder="ex : Hydra+")
-            product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
         with c2:
-            materiau = st.text_input("Matériau", placeholder="ex : inox")
-            couleur = st.text_input("Couleur", placeholder="ex : bleu nuit")
+            product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
 
-        infos_produits = st.text_area(
-            "Infos produits (séparées par des virgules)",
-            placeholder="750ml, garde le froid 24h, sans BPA, anse de transport...",
-            height=100,
-        )
+        with st.expander("➕ Ajouter des caractéristiques optionnelles"):
+            c3, c4 = st.columns(2)
+            with c3:
+                materiau = st.text_input("Matériau", placeholder="ex : inox")
+                sku = st.text_input(
+                    "SKU (référence interne)",
+                    placeholder="ex : GRD-INOX-750-BN",
+                    help="Laisse vide pour générer un SKU automatique à partir de la marque et du type de produit.",
+                )
+            with c4:
+                couleur = st.text_input("Couleur", placeholder="ex : bleu nuit")
+                fabricant = st.text_input(
+                    "Fabricant",
+                    placeholder="ex : Hydra+ SAS",
+                    help="Si différent de la marque. Laisse vide pour utiliser la marque.",
+                )
 
-        image_url = st.text_input(
-            "URL de l'image principale (déjà hébergée)",
-            placeholder="https://...",
-            help="L'image doit être déjà hébergée en ligne (Drive, serveur...). "
-                 "Attention : un lien de partage Google Drive classique ne fonctionne "
-                 "pas tel quel, il faut un lien d'accès direct à l'image.",
-        )
+            infos_produits = st.text_area(
+                "Infos produits",
+                placeholder="Avec virgules : 750ml, garde le froid 24h, sans BPA\n"
+                            "Ou texte libre : gourde isotherme 750ml garde le froid 24h sans BPA anse de transport",
+                height=100,
+                help="Séparés par des virgules ou en texte libre : le NLP (nltk + LEFFF) "
+                     "extrait automatiquement les caractéristiques si aucune virgule n'est détectée.",
+            )
 
-        images_secondaires_brut = st.text_area(
-            "URLs des images secondaires (optionnel, séparées par des virgules)",
-            placeholder="https://..., https://...",
-            height=70,
-            help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
-        )
+            image_url = st.text_input(
+                "URL de l'image principale (déjà hébergée)",
+                placeholder="https://...",
+                help="L'image doit être hébergée en ligne avec un lien direct vers le fichier. "
+                     "Clic droit sur la photo → 'Copier l'adresse de l'image'.",
+            )
 
-        submitted = st.form_submit_button("Générer la fiche optimisée", type="primary")
+            images_secondaires_brut = st.text_area(
+                "URLs des images secondaires (séparées par des virgules)",
+                placeholder="https://..., https://...",
+                height=70,
+                help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
+            )
+
+        submitted = st.form_submit_button("🚀 Générer la fiche optimisée", type="primary")
 
     if submitted:
         if not brand or not product_type:
             st.error("Marque et Type de produit sont obligatoires.")
         else:
-            if infos_produits and "," not in infos_produits and len(infos_produits.split()) > 6:
-                st.warning(
-                    "💡 Le champ 'Infos produits' ne contient pas de virgule : il sera "
-                    "traité comme une seule information. Pour de meilleurs résultats, "
-                    "sépare chaque info par une virgule (ex: 150x80cm, made in France, "
-                    "facile à nettoyer)."
-                )
             raw_input = {
                 "marque": brand,
                 "type_produit": product_type,
@@ -282,6 +352,8 @@ with tab_single:
                 "infos_produits": infos_produits,
                 "image_url": image_url,
                 "images_secondaires": parser_urls(images_secondaires_brut),
+                "sku": sku,
+                "fabricant": fabricant,
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)
@@ -329,9 +401,20 @@ with tab_batch:
             value=True,
         )
 
+        st.markdown("**Marketplaces à exporter :**")
+        mp_cols = st.columns(3)
+        with mp_cols[0]:
+            export_amazon_lot = st.checkbox("📦 Amazon", value=True, key="lot_amazon")
+        with mp_cols[1]:
+            export_cdiscount_lot = st.checkbox("🛒 Cdiscount", value=True, key="lot_cdiscount")
+        with mp_cols[2]:
+            export_fnac_lot = st.checkbox("🎵 Fnac Darty", value=False, key="lot_fnac")
+
         if st.button("Générer toutes les fiches", type="primary"):
             results = []
             lignes_export_amazon = []
+            lignes_export_cdiscount = []
+            lignes_export_fnac = []
             lignes_sans_virgule = 0
             lignes_incompletes = 0
             progress = st.progress(0, text="Génération en cours...")
@@ -390,6 +473,14 @@ with tab_batch:
                         images_secondaires=images_secondaires, indice=i,
                     )
                 )
+                if export_cdiscount_lot:
+                    lignes_export_cdiscount.append(
+                        generer_ligne_export_cdiscount(raw_input, listing, image_url=image_url, indice=i)
+                    )
+                if export_fnac_lot:
+                    lignes_export_fnac.append(
+                        generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url, indice=i)
+                    )
                 ajouter_a_historique(raw_input, listing, report.score, score_image or None)
 
                 progress.progress((i + 1) / total, text=f"Produit {i + 1}/{total} traité")
@@ -409,16 +500,41 @@ with tab_batch:
             result_df = pd.DataFrame(results)
             st.session_state["batch_results"] = result_df
             st.session_state["batch_export_amazon"] = pd.DataFrame(lignes_export_amazon)
+            if lignes_export_cdiscount:
+                st.session_state["batch_export_cdiscount"] = pd.DataFrame(lignes_export_cdiscount)
+            if lignes_export_fnac:
+                st.session_state["batch_export_fnac"] = pd.DataFrame(lignes_export_fnac)
 
     if "batch_results" in st.session_state:
-        export_buffer = io.BytesIO()
-        st.session_state["batch_export_amazon"].to_excel(export_buffer, index=False, engine="openpyxl")
-        st.download_button(
-            "📤 Télécharger l'export façon Amazon (Excel, à copier-coller dans le vrai template)",
-            data=export_buffer.getvalue(),
-            file_name="export_amazon_lot.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
+        st.markdown("### Télécharger les exports")
+        dl_cols = st.columns(3)
+        with dl_cols[0]:
+            if "batch_export_amazon" in st.session_state:
+                buf = io.BytesIO()
+                st.session_state["batch_export_amazon"].to_excel(buf, index=False, engine="openpyxl")
+                st.download_button(
+                    "📦 Export Amazon",
+                    data=buf.getvalue(), file_name="export_amazon_lot.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        with dl_cols[1]:
+            if "batch_export_cdiscount" in st.session_state:
+                buf = io.BytesIO()
+                st.session_state["batch_export_cdiscount"].to_excel(buf, index=False, engine="openpyxl")
+                st.download_button(
+                    "🛒 Export Cdiscount",
+                    data=buf.getvalue(), file_name="export_cdiscount_lot.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        with dl_cols[2]:
+            if "batch_export_fnac" in st.session_state:
+                buf = io.BytesIO()
+                st.session_state["batch_export_fnac"].to_excel(buf, index=False, engine="openpyxl")
+                st.download_button(
+                    "🎵 Export Fnac Darty",
+                    data=buf.getvalue(), file_name="export_fnac_darty_lot.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
 
         st.markdown("### Résultats détaillés")
         st.dataframe(st.session_state["batch_results"], use_container_width=True)
