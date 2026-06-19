@@ -58,113 +58,78 @@ st.html("""
 
 <div style="
   position: relative;
-  padding: 2.5rem 0 2rem;
+  padding: 2.25rem 0 1.75rem;
   border-bottom: 1px solid #2E3545;
   margin-bottom: 1.5rem;
   overflow: hidden;
+  min-height: 130px;
 ">
-
   <!-- Dot pattern -->
   <div style="
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background-image: radial-gradient(circle, rgba(58,68,85,0.9) 1px, transparent 1px);
     background-size: 22px 22px;
-    opacity: 0.6;
+    opacity: 0.55;
     pointer-events: none;
   "></div>
-
-  <!-- Gradient fade sur les bords -->
+  <!-- Fade gauche/droite -->
+  <div style="
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, #1E2128 0%, rgba(30,33,40,0.4) 30%, rgba(30,33,40,0.4) 60%, #1E2128 100%);
+    pointer-events: none;
+  "></div>
+  <!-- SVG étiquettes — ancrées en bas à droite pour rester visibles -->
   <div style="
     position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      #1E2128 0%,
-      transparent 25%,
-      transparent 75%,
-      #1E2128 100%
-    );
-    pointer-events: none;
-  "></div>
-
-  <!-- SVG étiquettes produit — décoration droite -->
-  <div style="position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); opacity: 0.18; pointer-events: none;">
-    <svg xmlns="http://www.w3.org/2000/svg" width="180" height="120" viewBox="0 0 180 120">
-
-      <!-- Étiquette principale -->
-      <g transform="rotate(-12, 60, 60)">
-        <path d="M30,18 L30,95 Q30,102 37,102 L83,102 Q90,102 90,95 L90,18 Q90,11 83,11 L37,11 Q30,11 30,18 Z"
+    right: 2rem; bottom: -8px;
+    opacity: 0.22; pointer-events: none;
+    line-height: 0;
+  ">
+    <svg xmlns="http://www.w3.org/2000/svg" width="160" height="110" viewBox="0 0 160 110">
+      <!-- Étiquette principale légèrement inclinée -->
+      <g transform="rotate(-10, 65, 55)">
+        <path d="M28,16 L28,92 Q28,99 35,99 L82,99 Q89,99 89,92 L89,16 Q89,9 82,9 L35,9 Q28,9 28,16 Z"
               fill="none" stroke="#C4606E" stroke-width="1.5"/>
-        <circle cx="60" cy="6" r="4.5" fill="none" stroke="#C4606E" stroke-width="1.5"/>
-        <line x1="60" y1="1.5" x2="60" y2="11" stroke="#C4606E" stroke-width="1.5" stroke-linecap="round"/>
-        <text x="60" y="60" text-anchor="middle"
-              font-family="DM Serif Display, Georgia, serif"
-              font-style="italic" font-size="15" fill="#C4606E">✦</text>
-        <!-- Barcode simulé -->
-        <line x1="37" y1="76" x2="37" y2="89" stroke="#C4606E" stroke-width="2.5"/>
-        <line x1="41" y1="76" x2="41" y2="89" stroke="#C4606E" stroke-width="1"/>
-        <line x1="44" y1="76" x2="44" y2="89" stroke="#C4606E" stroke-width="3"/>
-        <line x1="48" y1="76" x2="48" y2="89" stroke="#C4606E" stroke-width="1"/>
-        <line x1="51" y1="76" x2="51" y2="89" stroke="#C4606E" stroke-width="2"/>
-        <line x1="55" y1="76" x2="55" y2="89" stroke="#C4606E" stroke-width="1"/>
-        <line x1="58" y1="76" x2="58" y2="89" stroke="#C4606E" stroke-width="3"/>
-        <line x1="62" y1="76" x2="62" y2="89" stroke="#C4606E" stroke-width="1"/>
-        <line x1="65" y1="76" x2="65" y2="89" stroke="#C4606E" stroke-width="2"/>
-        <line x1="69" y1="76" x2="69" y2="89" stroke="#C4606E" stroke-width="1.5"/>
-        <line x1="72" y1="76" x2="72" y2="89" stroke="#C4606E" stroke-width="2.5"/>
-        <line x1="76" y1="76" x2="76" y2="89" stroke="#C4606E" stroke-width="1"/>
-        <line x1="79" y1="76" x2="79" y2="89" stroke="#C4606E" stroke-width="2"/>
-        <line x1="83" y1="76" x2="83" y2="89" stroke="#C4606E" stroke-width="1"/>
+        <circle cx="58" cy="4" r="4" fill="none" stroke="#C4606E" stroke-width="1.5"/>
+        <line x1="58" y1="0" x2="58" y2="9" stroke="#C4606E" stroke-width="1.5" stroke-linecap="round"/>
+        <text x="58" y="57" text-anchor="middle" font-family="Georgia,serif" font-style="italic" font-size="14" fill="#C4606E">✦</text>
+        <line x1="35" y1="73" x2="35" y2="85" stroke="#C4606E" stroke-width="2.5"/>
+        <line x1="39" y1="73" x2="39" y2="85" stroke="#C4606E" stroke-width="1"/>
+        <line x1="43" y1="73" x2="43" y2="85" stroke="#C4606E" stroke-width="3"/>
+        <line x1="47" y1="73" x2="47" y2="85" stroke="#C4606E" stroke-width="1"/>
+        <line x1="51" y1="73" x2="51" y2="85" stroke="#C4606E" stroke-width="2"/>
+        <line x1="55" y1="73" x2="55" y2="85" stroke="#C4606E" stroke-width="1"/>
+        <line x1="59" y1="73" x2="59" y2="85" stroke="#C4606E" stroke-width="3"/>
+        <line x1="63" y1="73" x2="63" y2="85" stroke="#C4606E" stroke-width="1"/>
+        <line x1="67" y1="73" x2="67" y2="85" stroke="#C4606E" stroke-width="2"/>
+        <line x1="71" y1="73" x2="71" y2="85" stroke="#C4606E" stroke-width="1.5"/>
+        <line x1="75" y1="73" x2="75" y2="85" stroke="#C4606E" stroke-width="2.5"/>
+        <line x1="79" y1="73" x2="79" y2="85" stroke="#C4606E" stroke-width="1"/>
+        <line x1="83" y1="73" x2="83" y2="85" stroke="#C4606E" stroke-width="1.5"/>
       </g>
-
-      <!-- Étiquette secondaire décalée -->
-      <g transform="rotate(8, 130, 50) translate(85, 5)">
-        <path d="M10,15 L10,75 Q10,80 15,80 L55,80 Q60,80 60,75 L60,15 Q60,10 55,10 L15,10 Q10,10 10,15 Z"
-              fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.7"/>
-        <circle cx="35" cy="5" r="3.5" fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.7"/>
-        <line x1="35" y1="1.5" x2="35" y2="10" stroke="#D4826E" stroke-width="1.2" stroke-linecap="round" opacity="0.7"/>
-        <line x1="17" y1="30" x2="53" y2="30" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
-        <line x1="17" y1="40" x2="45" y2="40" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
-        <line x1="17" y1="50" x2="50" y2="50" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+      <!-- Étiquette secondaire -->
+      <g transform="rotate(7, 120, 45) translate(82, 8)">
+        <path d="M8,13 L8,72 Q8,77 13,77 L52,77 Q57,77 57,72 L57,13 Q57,8 52,8 L13,8 Q8,8 8,13 Z"
+              fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.75"/>
+        <circle cx="32" cy="4" r="3.5" fill="none" stroke="#D4826E" stroke-width="1.2" opacity="0.75"/>
+        <line x1="32" y1="0.5" x2="32" y2="8" stroke="#D4826E" stroke-width="1.2" stroke-linecap="round" opacity="0.75"/>
+        <line x1="15" y1="28" x2="50" y2="28" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+        <line x1="15" y1="38" x2="43" y2="38" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
+        <line x1="15" y1="48" x2="47" y2="48" stroke="#D4826E" stroke-width="0.8" opacity="0.5"/>
       </g>
-
     </svg>
   </div>
-
-  <!-- Contenu texte -->
+  <!-- Contenu -->
   <div style="position: relative; z-index: 1;">
-    <p style="
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.65rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      color: #C4606E;
-      margin: 0 0 0.5rem;
-    ">✦ &nbsp; Outil catalogue marketplace</p>
-
-    <h1 style="
-      font-family: 'DM Serif Display', Georgia, serif;
-      font-size: 2.25rem;
-      font-weight: 400;
-      color: #F4F1EA;
-      margin: 0 0 0.6rem;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
-    ">Création Fiche Produit<br>
-    <em style="color: #8A9BB0; font-style: italic;">Marketplace</em></h1>
-
-    <p style="
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.82rem;
-      color: #6E7A8A;
-      margin: 0;
-      max-width: 460px;
-      line-height: 1.65;
-    ">Une saisie, plusieurs exports — Amazon, Cdiscount, Fnac Darty,<br>Leroy Merlin et Maisons du Monde.</p>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.65rem; font-weight:600; text-transform:uppercase; letter-spacing:0.18em; color:#C4606E; margin:0 0 0.45rem;">✦ &nbsp;Outil catalogue marketplace</p>
+    <h1 style="font-family:'DM Serif Display',Georgia,serif; font-size:2.2rem; font-weight:400; color:#F4F1EA; margin:0 0 0.55rem; line-height:1.15; letter-spacing:-0.02em;">
+      Création Fiche Produit<br>
+      <em style="color:#8A9BB0; font-style:italic;">Marketplace</em>
+    </h1>
+    <p style="font-family:'DM Sans',sans-serif; font-size:0.82rem; color:#6E7A8A; margin:0; max-width:460px; line-height:1.65;">
+      Une saisie, plusieurs exports — Amazon, Cdiscount, Fnac Darty,<br>Leroy Merlin et Maisons du Monde.
+    </p>
   </div>
-
 </div>
 """)
 
@@ -243,7 +208,24 @@ st.sidebar.caption(
 tab_single, tab_batch, tab_historique = st.tabs(["Fiche unique", "Lot (Excel)", "Historique"])
 
 
-def afficher_bloc_conformite(titre: str, score: float, checks: list, cle_expander: str):
+def _section_label(texte: str):
+    """En-tête de section avec bordure gauche terracotta."""
+    st.html(f"""
+    <div style="
+      border-left: 2px solid #C4606E;
+      padding-left: 10px;
+      margin: 1.25rem 0 0.6rem;
+    ">
+      <span style="
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: #8A9BB0;
+      ">{texte}</span>
+    </div>
+    """)
     """Bloc réutilisé pour le texte ET l'image : note + icône + détail dépliable."""
     st.markdown("---")
     st.subheader(titre)
@@ -296,8 +278,8 @@ def render_result(raw_input: dict, listing: dict):
     marketplaces_selectionnees = raw_input.get("marketplaces", ["amazon"])
 
     # --- Section exports ---
+    _section_label("Exports")
     st.markdown("---")
-    st.subheader("📤 Exports")
 
     # Alertes de pertinence
     marketplaces_suggerees = get_marketplaces_suggereees(categorie)
@@ -344,7 +326,7 @@ def render_result(raw_input: dict, listing: dict):
                         key=f"dl_{cle}",
                     )
 
-    st.markdown("---")
+    _section_label("Fiche générée")
     col_before, col_after = st.columns(2)
     with col_before:
         st.subheader("Avant (infos brutes)")
@@ -425,19 +407,60 @@ def parser_urls(texte: str) -> list:
 with tab_single:
     st.caption("* champs obligatoires")
 
-    st.markdown("**🏪 Marketplaces cibles**")
-    mp_cols = st.columns(5)
-    with mp_cols[0]:
-        sel_amazon = st.checkbox("📦 Amazon", value=True, key="single_amazon")
-    with mp_cols[1]:
-        sel_cdiscount = st.checkbox("🛒 Cdiscount", value=True, key="single_cdiscount")
-    with mp_cols[2]:
-        sel_fnac = st.checkbox("🎵 Fnac Darty", value=False, key="single_fnac")
-    with mp_cols[3]:
-        sel_lm = st.checkbox("🏡 Leroy Merlin", value=False, key="single_lm")
-    with mp_cols[4]:
-        sel_mdm = st.checkbox("🛋️ Maisons du Monde", value=False, key="single_mdm")
+    # ── Logo cards marketplaces (visuels) ─────────────────────────
+    MARKETPLACE_META = [
+        ("amazon",          "Amazon",          "#FF9900", "amazon.fr"),
+        ("cdiscount",       "Cdiscount",       "#E84D0E", "cdiscount.com"),
+        ("fnac_darty",      "Fnac Darty",      "#E1A500", "fnac.com"),
+        ("leroy_merlin",    "Leroy Merlin",    "#78B843", "leroymerlin.fr"),
+        ("maisons_du_monde","Maisons du Monde","#8B6F5E", "maisonsdumonde.com"),
+    ]
 
+    cards_html = """
+    <div style="
+      display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;
+    ">"""
+    for key, name, color, domain in MARKETPLACE_META:
+        favicon = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://{domain}&size=64"
+        cards_html += f"""
+      <div style="
+        display:flex; align-items:center; gap:8px;
+        background:#252B35;
+        border:1px solid #2E3545;
+        border-top:2px solid {color};
+        border-radius:8px;
+        padding:9px 13px;
+      ">
+        <img src="{favicon}"
+             style="width:18px;height:18px;border-radius:3px;object-fit:contain;"
+             onerror="this.style.display='none'" />
+        <span style="
+          font-family:'DM Sans',sans-serif;
+          font-size:0.75rem;
+          font-weight:600;
+          color:{color};
+          letter-spacing:0.01em;
+        ">{name}</span>
+      </div>"""
+    cards_html += "\n    </div>"
+    st.html(cards_html)
+
+    # ── Pills de sélection ────────────────────────────────────────
+    MP_OPTIONS  = ["Amazon", "Cdiscount", "Fnac Darty", "Leroy Merlin", "Maisons du Monde"]
+    MP_TO_KEY   = {
+        "Amazon":           "amazon",
+        "Cdiscount":        "cdiscount",
+        "Fnac Darty":       "fnac_darty",
+        "Leroy Merlin":     "leroy_merlin",
+        "Maisons du Monde": "maisons_du_monde",
+    }
+    selected_pills = st.pills(
+        "Sélectionne tes marketplaces cibles",
+        MP_OPTIONS,
+        selection_mode="multi",
+        default=["Amazon", "Cdiscount"],
+        key="mp_pills",
+    )
     st.markdown("---")
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
@@ -446,7 +469,7 @@ with tab_single:
         with c2:
             product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
 
-        with st.expander("➕ Ajouter des caractéristiques optionnelles"):
+        with st.expander("Ajouter des caractéristiques optionnelles"):
             c3, c4 = st.columns(2)
             with c3:
                 materiau = st.text_input("Matériau", placeholder="ex : inox")
@@ -502,15 +525,7 @@ with tab_single:
                 "images_secondaires": parser_urls(images_secondaires_brut),
                 "sku": sku,
                 "fabricant": fabricant,
-                "marketplaces": [
-                    cle for cle, sel in [
-                        ("amazon", sel_amazon),
-                        ("cdiscount", sel_cdiscount),
-                        ("fnac_darty", sel_fnac),
-                        ("leroy_merlin", sel_lm),
-                        ("maisons_du_monde", sel_mdm),
-                    ] if sel
-                ],
+                "marketplaces": [MP_TO_KEY[n] for n in (selected_pills or [])],
             }
             listing = generer_fiche(raw_input)
             st.session_state["last_listing"] = (raw_input, listing)

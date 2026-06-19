@@ -1,13 +1,10 @@
 /* ---------------------------------------------------------------
-   Création Fiche Produit Marketplace — style.css
+   Création Fiche Produit Marketplace — style.css v3
    Direction C : Ardoise éditorial
-   Fond ardoise #1E2128, accent terracotta #C4606E, texte crème
-   + DM Serif Display pour les titres et scores
    --------------------------------------------------------------- */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap');
 
-/* ── Tokens ─────────────────────────────────────────────────── */
 :root {
   --bg:          #1E2128;
   --bg-card:     #252B35;
@@ -28,84 +25,55 @@
 }
 
 /* ── Base ────────────────────────────────────────────────────── */
-.stApp {
-  background: var(--bg) !important;
-  font-family: var(--font-sans) !important;
-}
+.stApp { background: var(--bg) !important; font-family: var(--font-sans) !important; }
 #MainMenu, footer, [data-testid="stToolbar"] { visibility: hidden !important; }
-[data-testid="stDecoration"]                  { display: none !important; }
-[data-testid="stHeader"] {
-  background: var(--bg) !important;
-  border-bottom: 1px solid var(--border) !important;
-}
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stHeader"] { background: var(--bg) !important; border-bottom: 1px solid var(--border) !important; }
 .block-container { padding-top: 1rem !important; padding-bottom: 3rem !important; }
 
 /* ── Sidebar ─────────────────────────────────────────────────── */
-[data-testid="stSidebar"] {
-  background: var(--bg-card) !important;
-  border-right: 1px solid var(--border) !important;
-}
-[data-testid="stSidebar"] .stMarkdown p {
-  font-size: 0.78rem !important;
-  color: var(--text-muted) !important;
-  line-height: 1.6 !important;
-}
+[data-testid="stSidebar"] { background: var(--bg-card) !important; border-right: 1px solid var(--border) !important; }
+[data-testid="stSidebar"] .stMarkdown p { font-size: 0.78rem !important; color: var(--text-muted) !important; line-height: 1.6 !important; }
 
 /* ── Typographie ─────────────────────────────────────────────── */
 p, label, span, div { font-family: var(--font-sans) !important; }
-
-h1 {
-  font-family: var(--font-sans) !important;
-  font-size: 1.35rem !important;
-  font-weight: 600 !important;
-  color: var(--text) !important;
-  letter-spacing: -0.01em !important;
-}
-h2 {
-  font-family: var(--font-sans) !important;
-  font-size: 0.95rem !important;
-  font-weight: 600 !important;
-  color: var(--text) !important;
-}
-h3 {
-  font-family: var(--font-sans) !important;
-  font-size: 0.7rem !important;
-  font-weight: 500 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  color: var(--text-muted) !important;
-}
+h1 { font-family: var(--font-sans) !important; font-size: 1.35rem !important; font-weight: 600 !important; color: var(--text) !important; }
+h2 { font-family: var(--font-sans) !important; font-size: 0.95rem !important; font-weight: 600 !important; color: var(--text) !important; }
+h3 { font-family: var(--font-sans) !important; font-size: 0.7rem !important; font-weight: 500 !important; text-transform: uppercase !important; letter-spacing: 0.1em !important; color: var(--text-muted) !important; }
 .stCaption p { color: var(--text-muted) !important; font-size: 0.76rem !important; }
 
-/* ── Tabs — pills ardoise ────────────────────────────────────── */
-.stTabs [data-baseweb="tab-list"] {
-  gap: 2px !important;
+/* ── Tabs pills ──────────────────────────────────────────────── */
+.stTabs [data-baseweb="tab-list"] { gap: 2px !important; background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius-lg) !important; padding: 3px !important; width: fit-content !important; }
+.stTabs [data-baseweb="tab"] { background: transparent !important; border: none !important; border-radius: var(--radius) !important; color: var(--text-muted) !important; font-family: var(--font-sans) !important; font-size: 0.8rem !important; font-weight: 500 !important; padding: 5px 14px !important; transition: all 0.15s ease !important; }
+.stTabs [aria-selected="true"] { background: var(--bg-hover) !important; color: var(--text) !important; border: 1px solid var(--border-md) !important; }
+.stTabs [data-baseweb="tab-highlight"], .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+/* ── Pills marketplace (st.pills) ────────────────────────────── */
+[data-testid="stPills"] { gap: 6px !important; flex-wrap: wrap !important; }
+[data-testid="stPills"] button {
   background: var(--bg-card) !important;
   border: 1px solid var(--border) !important;
-  border-radius: var(--radius-lg) !important;
-  padding: 3px !important;
-  width: fit-content !important;
-}
-.stTabs [data-baseweb="tab"] {
-  background: transparent !important;
-  border: none !important;
-  border-radius: var(--radius) !important;
+  border-radius: 20px !important;
   color: var(--text-muted) !important;
   font-family: var(--font-sans) !important;
-  font-size: 0.8rem !important;
+  font-size: 0.78rem !important;
   font-weight: 500 !important;
   padding: 5px 14px !important;
   transition: all 0.15s ease !important;
 }
-.stTabs [aria-selected="true"] {
-  background: var(--bg-hover) !important;
+[data-testid="stPills"] button:hover {
+  border-color: var(--accent) !important;
   color: var(--text) !important;
-  border: 1px solid var(--border-md) !important;
+  background: var(--bg-hover) !important;
 }
-.stTabs [data-baseweb="tab-highlight"],
-.stTabs [data-baseweb="tab-border"] { display: none !important; }
+[data-testid="stPills"] button[aria-checked="true"] {
+  background: var(--accent-dim) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+  font-weight: 600 !important;
+}
 
-/* ── Boutons ────────────────────────────────────────────────── */
+/* ── Bouton Générer — gradient terracotta ───────────────────── */
 .stButton > button {
   background: var(--bg-card) !important;
   border: 1px solid var(--border-md) !important;
@@ -117,27 +85,27 @@ h3 {
   padding: 6px 14px !important;
   transition: all 0.15s ease !important;
 }
-.stButton > button:hover {
-  background: var(--bg-hover) !important;
-  border-color: var(--accent) !important;
-  color: var(--accent) !important;
-}
+.stButton > button:hover { background: var(--bg-hover) !important; border-color: var(--accent) !important; color: var(--accent) !important; }
 .stButton > button[kind="primaryFormSubmit"],
 .stButton > button[kind="primary"] {
-  background: var(--accent) !important;
+  background: linear-gradient(135deg, #C4606E 0%, #D4826E 100%) !important;
   border: none !important;
   color: #fff !important;
   font-weight: 600 !important;
+  box-shadow: 0 2px 14px rgba(196, 96, 110, 0.28) !important;
+  letter-spacing: 0.01em !important;
 }
 .stButton > button[kind="primaryFormSubmit"]:hover,
 .stButton > button[kind="primary"]:hover {
-  background: #B05562 !important;
+  background: linear-gradient(135deg, #B05562 0%, #C4726A 100%) !important;
+  box-shadow: 0 4px 20px rgba(196, 96, 110, 0.38) !important;
+  transform: translateY(-1px) !important;
 }
 
-/* ── Download buttons ────────────────────────────────────────── */
+/* ── Download buttons — ghost pointillé ─────────────────────── */
 [data-testid="stDownloadButton"] > button {
   background: transparent !important;
-  border: 1px solid var(--border-md) !important;
+  border: 1px dashed var(--border-md) !important;
   border-radius: var(--radius) !important;
   color: var(--text-muted) !important;
   font-family: var(--font-sans) !important;
@@ -147,101 +115,42 @@ h3 {
   transition: all 0.15s ease !important;
 }
 [data-testid="stDownloadButton"] > button:hover {
+  border-style: solid !important;
   border-color: var(--accent) !important;
   color: var(--accent) !important;
+  background: var(--accent-dim) !important;
 }
 
 /* ── Inputs ─────────────────────────────────────────────────── */
-.stTextInput input, .stTextArea textarea {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border-md) !important;
-  border-radius: var(--radius) !important;
-  color: var(--text) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 0.84rem !important;
-}
-.stTextInput input:focus, .stTextArea textarea:focus {
-  border-color: var(--accent) !important;
-  box-shadow: 0 0 0 3px var(--accent-dim) !important;
-}
-.stTextInput input::placeholder, .stTextArea textarea::placeholder {
-  color: var(--text-dim) !important;
-}
-[data-testid="InputInstructions"] {
-  color: var(--text-dim) !important;
-  font-size: 0.7rem !important;
-}
+.stTextInput input, .stTextArea textarea { background: var(--bg-card) !important; border: 1px solid var(--border-md) !important; border-radius: var(--radius) !important; color: var(--text) !important; font-family: var(--font-sans) !important; font-size: 0.84rem !important; }
+.stTextInput input:focus, .stTextArea textarea:focus { border-color: var(--accent) !important; box-shadow: 0 0 0 3px var(--accent-dim) !important; }
+.stTextInput input::placeholder, .stTextArea textarea::placeholder { color: var(--text-dim) !important; }
+[data-testid="InputInstructions"] { color: var(--text-dim) !important; font-size: 0.7rem !important; }
 
 /* ── Checkboxes ─────────────────────────────────────────────── */
-.stCheckbox label {
-  font-size: 0.8rem !important;
-  color: var(--text-muted) !important;
-}
+.stCheckbox label { font-size: 0.8rem !important; color: var(--text-muted) !important; }
 
-/* ── Métriques (scores) — DM Serif Display ───────────────────── */
-[data-testid="stMetricValue"] {
-  font-family: var(--font-serif) !important;
-  font-size: 2.5rem !important;
-  color: var(--text) !important;
-  letter-spacing: -0.02em !important;
-}
-[data-testid="stMetricLabel"] {
-  font-family: var(--font-sans) !important;
-  font-size: 0.65rem !important;
-  font-weight: 500 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.1em !important;
-  color: var(--text-muted) !important;
-}
+/* ── Métriques — DM Serif Display ───────────────────────────── */
+[data-testid="stMetricValue"] { font-family: var(--font-serif) !important; font-size: 2.5rem !important; color: var(--text) !important; letter-spacing: -0.02em !important; }
+[data-testid="stMetricLabel"] { font-family: var(--font-sans) !important; font-size: 0.65rem !important; font-weight: 500 !important; text-transform: uppercase !important; letter-spacing: 0.1em !important; color: var(--text-muted) !important; }
 
 /* ── Expanders ───────────────────────────────────────────────── */
-[data-testid="stExpander"] {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-}
+[data-testid="stExpander"] { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; }
 [data-testid="stExpander"]:hover { border-color: var(--border-md) !important; }
-summary { color: var(--text-muted) !important; font-size: 0.82rem !important; }
+details summary { color: var(--text-muted) !important; font-size: 0.82rem !important; font-family: var(--font-sans) !important; }
 
 /* ── Alertes ─────────────────────────────────────────────────── */
-[data-testid="stAlert"] {
-  background: var(--bg-card) !important;
-  border-radius: var(--radius) !important;
-  border: 1px solid var(--border) !important;
-  font-size: 0.8rem !important;
-}
+[data-testid="stAlert"] { background: var(--bg-card) !important; border-radius: var(--radius) !important; border: 1px solid var(--border) !important; font-size: 0.8rem !important; }
 
-/* ── Code / mots-clés back-end ───────────────────────────────── */
-pre, code {
-  background: var(--bg-card) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.76rem !important;
-  color: var(--text-muted) !important;
-}
+/* ── Code ────────────────────────────────────────────────────── */
+pre, code { background: var(--bg-card) !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; font-family: var(--font-mono) !important; font-size: 0.76rem !important; color: var(--text-muted) !important; }
 
-/* ── Progress bar ────────────────────────────────────────────── */
-[data-testid="stProgressBar"] > div {
-  background: var(--border) !important;
-  border-radius: 2px !important;
-}
-[data-testid="stProgressBar"] > div > div {
-  background: linear-gradient(90deg, var(--accent), var(--accent-warm)) !important;
-  border-radius: 2px !important;
-}
+/* ── Progress ─────────────────────────────────────────────────── */
+[data-testid="stProgressBar"] > div { background: var(--border) !important; border-radius: 2px !important; }
+[data-testid="stProgressBar"] > div > div { background: linear-gradient(90deg, var(--accent), var(--accent-warm)) !important; border-radius: 2px !important; }
 
 /* ── Dividers ────────────────────────────────────────────────── */
-hr {
-  border: none !important;
-  border-top: 1px solid var(--border) !important;
-  margin: 1.5rem 0 !important;
-}
+hr { border: none !important; border-top: 1px solid var(--border) !important; margin: 1.5rem 0 !important; }
 
 /* ── Dataframes ──────────────────────────────────────────────── */
-[data-testid="stDataFrame"] {
-  border: 1px solid var(--border) !important;
-  border-radius: var(--radius) !important;
-  overflow: hidden !important;
-  font-size: 0.76rem !important;
-}
+[data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
