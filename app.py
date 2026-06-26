@@ -446,11 +446,7 @@ with tab_single:
 
     # Le choix est hors du formulaire : sinon Streamlit ne rafraîchit pas l'affichage
     # des champs optionnels tant que le bouton de génération n'a pas été cliqué.
-    afficher_caracteristiques = st.checkbox(
-        "Ajouter des caractéristiques optionnelles",
-        value=False,
-        key="afficher_caracteristiques_optionnelles",
-    )
+    with st.expander("Ajouter des caractéristiques optionnelles"):
 
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
