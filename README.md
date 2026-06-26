@@ -4,7 +4,7 @@ Outil d'aide à la création de fiches produits pour vendeurs marketplace, déve
 
 **Une saisie, plusieurs exports.** À partir d'une matrice Excel simple, génère en quelques secondes des fiches optimisées et conformes pour Amazon, Cdiscount et Fnac Darty — avec score de conformité instantané et un fichier d'export par marketplace.
 
-> 🔗 **Application en ligne** : [à compléter après déploiement]
+> 🔗 **Application en ligne** : [lien du site](https://redaction-fiches-pdt-marketplace.streamlit.app/)
 
 ---
 
