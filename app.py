@@ -444,10 +444,6 @@ with tab_single:
 
     st.markdown("---")
 
-    # Le choix est hors du formulaire : sinon Streamlit ne rafraîchit pas l'affichage
-    # des champs optionnels tant que le bouton de génération n'a pas été cliqué.
-    with st.expander("Ajouter des caractéristiques optionnelles"):
-
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
@@ -455,16 +451,7 @@ with tab_single:
         with c2:
             product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
 
-        # Valeurs par défaut si les caractéristiques optionnelles ne sont pas affichées
-        materiau = ""
-        sku = ""
-        couleur = ""
-        fabricant = ""
-        infos_produits = ""
-        image_url = ""
-        images_secondaires_brut = ""
-
-        if afficher_caracteristiques:
+        with st.expander("Ajouter des caractéristiques optionnelles"):
             c3, c4 = st.columns(2)
             with c3:
                 materiau = st.text_input("Matériau", placeholder="ex : inox")
