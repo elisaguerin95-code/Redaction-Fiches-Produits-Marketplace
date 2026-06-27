@@ -190,8 +190,20 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   align-items: center !important;
 }
 
-/* On masque le texte d'aide natif de Streamlit, souvent mal placé selon les versions. */
-[data-testid="stFileUploaderDropzoneInstructions"] {
+
+/* Cache tous les textes natifs Streamlit dans la dropzone pour éviter les doublons. */
+[data-testid="stFileUploaderDropzone"] [data-testid="stFileUploaderDropzoneInstructions"],
+[data-testid="stFileUploaderDropzone"] p,
+[data-testid="stFileUploaderDropzone"] small,
+[data-testid="stFileUploaderDropzone"] span,
+[data-testid="stFileUploaderDropzone"] svg:not(button svg) {
+  display: none !important;
+}
+
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploaderDropzone"] button p,
+[data-testid="stFileUploaderDropzone"] button small,
+[data-testid="stFileUploaderDropzone"] button svg {
   display: none !important;
 }
 
