@@ -469,9 +469,20 @@ with tab_single:
 
     st.markdown("---")
 
-    # ── Champs optionnels contrôlés par un toggle (hors formulaire)
-    # Les valeurs sont stockées en session_state pour survivre au rerun
-    # déclenché par la soumission du formulaire.
+    # Formulaire principal : champs obligatoires uniquement
+    with st.form("single_listing_form"):
+        c1, c2 = st.columns(2)
+        with c1:
+            brand = st.text_input("Marque *", placeholder="ex : Hydra+")
+        with c2:
+            product_type = st.text_input("Type de produit *",
+                                         placeholder="ex : gourde isotherme")
+        st.caption("* champs obligatoires")
+        submitted = st.form_submit_button("🚀 Générer la fiche optimisée",
+                                          type="primary")
+
+    # ── Toggle + champs optionnels (hors formulaire, sous Marque/Type)
+    # Les valeurs sont stockées en session_state pour survivre au rerun.
     afficher_options = st.toggle(
         "Détails optionnels du produit",
         value=False,
@@ -479,7 +490,7 @@ with tab_single:
         help="Matériau, couleur, infos produits, images, SKU...",
     )
 
-    # Valeurs par défaut (utilisées si le toggle est fermé)
+    # Valeurs par défaut (si toggle fermé, on utilise ce qui est en mémoire)
     materiau          = st.session_state.get("opt_materiau", "")
     sku               = st.session_state.get("opt_sku", "")
     couleur           = st.session_state.get("opt_couleur", "")
@@ -506,7 +517,6 @@ with tab_single:
                 key="opt_fabricant",
                 help="Si différent de la marque. Laisse vide pour utiliser la marque.",
             )
-
         infos_produits = st.text_area(
             "Infos produits", key="opt_infos",
             placeholder="Avec virgules : 750ml, garde le froid 24h, sans BPA\n"
@@ -525,18 +535,6 @@ with tab_single:
             placeholder="https://..., https://...", height=70,
             help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
         )
-
-    st.markdown("---")
-    with st.form("single_listing_form"):
-        c1, c2 = st.columns(2)
-        with c1:
-            brand = st.text_input("Marque *", placeholder="ex : Hydra+")
-        with c2:
-            product_type = st.text_input("Type de produit *",
-                                         placeholder="ex : gourde isotherme")
-        st.caption("* champs obligatoires")
-        submitted = st.form_submit_button("🚀 Générer la fiche optimisée",
-                                          type="primary")
 
     if submitted:
         if not brand or not product_type:
