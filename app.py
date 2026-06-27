@@ -46,6 +46,17 @@ def _inject_styles():
     css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
     with open(css_path, encoding="utf-8") as f:
         css = f.read()
+    # Désactive l'autocomplete du navigateur qui pollue les labels Streamlit
+    css += """
+/* Masque les suggestions d'autocomplete du navigateur */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px #252B35 inset !important;
+    -webkit-text-fill-color: #F4F1EA !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+"""
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 _inject_styles()
@@ -451,7 +462,7 @@ with tab_single:
         with c2:
             product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
 
-        with st.expander("Ajouter des caractéristiques optionnelles"):
+        with st.expander("➕ Caractéristiques optionnelles"):
             c3, c4 = st.columns(2)
             with c3:
                 materiau = st.text_input("Matériau", placeholder="ex : inox")
