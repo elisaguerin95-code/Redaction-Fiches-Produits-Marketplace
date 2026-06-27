@@ -469,55 +469,74 @@ with tab_single:
 
     st.markdown("---")
 
+    # ── Champs optionnels contrôlés par un toggle (hors formulaire)
+    # Les valeurs sont stockées en session_state pour survivre au rerun
+    # déclenché par la soumission du formulaire.
+    afficher_options = st.toggle(
+        "Détails optionnels du produit",
+        value=False,
+        key="toggle_options",
+        help="Matériau, couleur, infos produits, images, SKU...",
+    )
+
+    # Valeurs par défaut (utilisées si le toggle est fermé)
+    materiau          = st.session_state.get("opt_materiau", "")
+    sku               = st.session_state.get("opt_sku", "")
+    couleur           = st.session_state.get("opt_couleur", "")
+    fabricant         = st.session_state.get("opt_fabricant", "")
+    infos_produits    = st.session_state.get("opt_infos", "")
+    image_url         = st.session_state.get("opt_image_url", "")
+    images_secondaires_brut = st.session_state.get("opt_images_sec", "")
+
+    if afficher_options:
+        c3, c4 = st.columns(2)
+        with c3:
+            materiau = st.text_input("Matériau", placeholder="ex : inox",
+                                     key="opt_materiau")
+            sku = st.text_input(
+                "SKU (référence interne)", placeholder="ex : GRD-INOX-750-BN",
+                key="opt_sku",
+                help="Laisse vide pour générer un SKU automatique.",
+            )
+        with c4:
+            couleur = st.text_input("Couleur", placeholder="ex : bleu nuit",
+                                    key="opt_couleur")
+            fabricant = st.text_input(
+                "Fabricant", placeholder="ex : Hydra+ SAS",
+                key="opt_fabricant",
+                help="Si différent de la marque. Laisse vide pour utiliser la marque.",
+            )
+
+        infos_produits = st.text_area(
+            "Infos produits", key="opt_infos",
+            placeholder="Avec virgules : 750ml, garde le froid 24h, sans BPA\n"
+                        "Ou texte libre : gourde isotherme 750ml garde le froid 24h",
+            height=100,
+            help="Séparés par des virgules ou en texte libre.",
+        )
+        image_url = st.text_input(
+            "URL de l'image principale (déjà hébergée)", key="opt_image_url",
+            placeholder="https://...",
+            help="Clic droit sur la photo → 'Copier l'adresse de l'image'.",
+        )
+        images_secondaires_brut = st.text_area(
+            "URLs des images secondaires (séparées par des virgules)",
+            key="opt_images_sec",
+            placeholder="https://..., https://...", height=70,
+            help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
+        )
+
+    st.markdown("---")
     with st.form("single_listing_form"):
         c1, c2 = st.columns(2)
         with c1:
             brand = st.text_input("Marque *", placeholder="ex : Hydra+")
         with c2:
-            product_type = st.text_input("Type de produit *", placeholder="ex : gourde isotherme")
-
-        with st.expander("➕ Caractéristiques optionnelles"):
-            c3, c4 = st.columns(2)
-            with c3:
-                materiau = st.text_input("Matériau", placeholder="ex : inox")
-                sku = st.text_input(
-                    "SKU (référence interne)",
-                    placeholder="ex : GRD-INOX-750-BN",
-                    help="Laisse vide pour générer un SKU automatique à partir de la marque et du type de produit.",
-                )
-            with c4:
-                couleur = st.text_input("Couleur", placeholder="ex : bleu nuit")
-                fabricant = st.text_input(
-                    "Fabricant",
-                    placeholder="ex : Hydra+ SAS",
-                    help="Si différent de la marque. Laisse vide pour utiliser la marque.",
-                )
-
-            infos_produits = st.text_area(
-                "Infos produits",
-                placeholder="Avec virgules : 750ml, garde le froid 24h, sans BPA\n"
-                            "Ou texte libre : gourde isotherme 750ml garde le froid 24h sans BPA anse de transport",
-                height=100,
-                help="Séparés par des virgules ou en texte libre : le NLP (nltk + LEFFF) "
-                     "extrait automatiquement les caractéristiques si aucune virgule n'est détectée.",
-            )
-
-            image_url = st.text_input(
-                "URL de l'image principale (déjà hébergée)",
-                placeholder="https://...",
-                help="L'image doit être hébergée en ligne avec un lien direct vers le fichier. "
-                     "Clic droit sur la photo → 'Copier l'adresse de l'image'.",
-            )
-
-            images_secondaires_brut = st.text_area(
-                "URLs des images secondaires (séparées par des virgules)",
-                placeholder="https://..., https://...",
-                height=70,
-                help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
-            )
-
+            product_type = st.text_input("Type de produit *",
+                                         placeholder="ex : gourde isotherme")
         st.caption("* champs obligatoires")
-        submitted = st.form_submit_button("🚀 Générer la fiche optimisée", type="primary")
+        submitted = st.form_submit_button("🚀 Générer la fiche optimisée",
+                                          type="primary")
 
     if submitted:
         if not brand or not product_type:
@@ -569,7 +588,7 @@ with tab_batch:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    uploaded_file = st.file_uploader("Sélectionner un fichier Excel", type=["xlsx"])
+    uploaded_file = st.file_uploader("📂 Importer la matrice Excel des produits", type=["xlsx"])
 
     if uploaded_file is not None:
         df_input = pd.read_excel(uploaded_file)
