@@ -41,25 +41,39 @@ st.set_page_config(
     layout="wide",
 )
 
-# ── Injection CSS ────────────────────────────────────────────────
+# ── Injection CSS + désactivation autocomplete navigateur ───────
 def _inject_styles():
     css_path = os.path.join(os.path.dirname(__file__), "assets", "style.css")
     with open(css_path, encoding="utf-8") as f:
         css = f.read()
-    # Désactive l'autocomplete du navigateur qui pollue les labels Streamlit
-    css += """
-/* Masque les suggestions d'autocomplete du navigateur */
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px #252B35 inset !important;
-    -webkit-text-fill-color: #F4F1EA !important;
-    transition: background-color 5000s ease-in-out 0s;
-}
-"""
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
+def _disable_autocomplete():
+    """Force autocomplete=off sur tous les inputs via un composant HTML.
+    Nécessaire car Streamlit ne permet pas de passer cet attribut directement."""
+    import streamlit.components.v1 as components
+    components.html(
+        """
+        <script>
+        function disableAutocomplete() {
+            const inputs = window.parent.document.querySelectorAll('input');
+            inputs.forEach(function(input) {
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('autocomplete', 'new-password');
+            });
+        }
+        // Au chargement
+        disableAutocomplete();
+        // Et après chaque rerun Streamlit (qui recrée les éléments DOM)
+        const observer = new MutationObserver(disableAutocomplete);
+        observer.observe(window.parent.document.body, { childList: true, subtree: true });
+        </script>
+        """,
+        height=0,
+    )
+
 _inject_styles()
+_disable_autocomplete()
 
 # ── Hero header (HTML custom, pas st.title générique) ───────────
 st.markdown("""
