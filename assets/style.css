@@ -31,9 +31,10 @@
 [data-testid="stHeader"] { display: none !important; height: 0 !important; }
 .block-container { padding-top: 0 !important; padding-bottom: 3rem !important; }
 
-/* ── Sidebar ─────────────────────────────────────────────────── */
-[data-testid="stSidebar"] { background: var(--bg-card) !important; border-right: 1px solid var(--border) !important; }
-[data-testid="stSidebar"] .stMarkdown p { font-size: 0.78rem !important; color: var(--text-muted) !important; line-height: 1.6 !important; }
+/* ── Sidebar — cachée sur tous les navigateurs ───────────────── */
+[data-testid="stSidebar"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"] { display: none !important; }
 
 /* ── Typographie ─────────────────────────────────────────────── */
 p, label, span, div { font-family: var(--font-sans) !important; }
@@ -154,6 +155,18 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 
 /* ── Dataframes ──────────────────────────────────────────────── */
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
+
+/* ── File uploader — reset complet pour éviter les doublons ──── */
+[data-testid="stFileUploader"] section { display: flex !important; flex-direction: column !important; }
+[data-testid="stFileUploaderDropzone"]::before,
+[data-testid="stFileUploaderDropzone"]::after,
+[data-testid="stFileUploaderDropzoneInstructions"]::before,
+[data-testid="stFileUploaderDropzoneInstructions"]::after { content: none !important; display: none !important; }
+[data-testid="stFileUploaderDropzone"] {
+  background: var(--bg-card) !important;
+  border: 1px dashed var(--border-md) !important;
+  border-radius: var(--radius) !important;
+}
 
 /* ── Marketplaces : cases à cocher façon cartes ─────────────── */
 .stCheckbox label {

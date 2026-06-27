@@ -209,25 +209,6 @@ def ajouter_a_historique(raw_input: dict, listing: dict, score_texte: float, sco
 # ---------------------------------------------------------------------
 # Sidebar : info sur le moteur (pas de clé API nécessaire)
 # ---------------------------------------------------------------------
-st.sidebar.title("À propos")
-st.sidebar.caption(
-    "Génération 100% déterministe (aucun appel à une IA générative externe) : "
-    "le moteur applique des règles de texte et de conformité, donc "
-    "aucune clé API n'est nécessaire et aucun risque de plantage."
-)
-st.sidebar.markdown("---")
-st.sidebar.caption(
-    "Moteur de conformité basé sur les règles Amazon Seller Central "
-    "vérifiées en juin 2026, incluant la nouvelle limite de titre à "
-    "75 caractères applicable au 27/07/2026."
-)
-st.sidebar.markdown("---")
-st.sidebar.caption(
-    "L'historique (3ᵉ onglet) ne couvre que la session en cours : il est "
-    "perdu si tu fermes ou recharges la page."
-)
-
-# ---------------------------------------------------------------------
 # Header
 # ---------------------------------------------------------------------
 tab_single, tab_batch, tab_historique = st.tabs(["Fiche unique", "Lot (Excel)", "Historique"])
