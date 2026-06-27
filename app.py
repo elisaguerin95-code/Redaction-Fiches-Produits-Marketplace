@@ -561,85 +561,107 @@ with tab_single:
 
 
 # ---------------------------------------------------------------------
-# Onglet 2 : traitement par lot (Excel)
+# Onglet 2 : traitement par lot
 # ---------------------------------------------------------------------
 with tab_batch:
-    st.markdown(
-        "Le fichier Excel doit contenir les colonnes : `marque` * , "
-        "`type_produit` * , `materiau`, `couleur`, `infos_produits`, "
-        "`image_url`, `images_secondaires` (* obligatoires ; infos et "
-        "URLs séparées par des virgules dans la cellule)."
+    st.caption(
+        "Saisis tes produits directement dans le tableau ci-dessous — "
+        "tu peux ajouter autant de lignes que tu veux. "
+        "Seules **Marque** et **Type de produit** sont obligatoires."
     )
 
-    template_df = pd.DataFrame([
-        {"marque": "Hydra+", "type_produit": "gourde isotherme", "materiau": "inox",
-         "couleur": "bleu nuit",
-         "infos_produits": "750ml, garde le froid 24h, sans BPA, anse de transport",
-         "image_url": "https://...", "images_secondaires": ""},
-    ])
-    template_buffer = io.BytesIO()
-    template_df.to_excel(template_buffer, index=False, engine="openpyxl")
-    st.download_button(
-        "Télécharger le modèle Excel",
-        data=template_buffer.getvalue(),
-        file_name="modele_produits.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
+    # ── Tableau éditable (remplace l'upload Excel — zéro bouton, zéro bug) ──
+    COLONNES_DEFAUT = {
+        "marque": "",
+        "type_produit": "",
+        "materiau": "",
+        "couleur": "",
+        "infos_produits": "",
+        "image_url": "",
+        "images_secondaires": "",
+    }
 
-    st.markdown(
-        """
-        <div style="
-            background: #252B35;
-            border: 1px dashed #3A4455;
-            border-radius: 6px;
-            padding: 0.6rem 1rem;
-            margin-bottom: 0.5rem;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.8rem;
-            color: #8A9BB0;
-        ">
-            📂 <strong style="color:#F4F1EA;">Glisse ton fichier ici</strong>
-            &nbsp;ou utilise le sélecteur ci-dessous (format .xlsx uniquement)
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    uploaded_file = st.file_uploader(
-        "Fichier Excel",
-        type=["xlsx"],
-        label_visibility="collapsed",
-    )
-
-    if uploaded_file is not None:
-        df_input = pd.read_excel(uploaded_file)
-        df_input = df_input.fillna("")  # évite les erreurs sur les cellules vides
-        st.dataframe(df_input, use_container_width=True)
-
-        verifier_images = st.checkbox(
-            "Vérifier aussi la conformité des images (plus lent : 1 téléchargement par image)",
-            value=True,
+    # Initialisation du tableau avec 3 lignes vides
+    if "batch_df_edit" not in st.session_state:
+        st.session_state["batch_df_edit"] = pd.DataFrame(
+            [COLONNES_DEFAUT.copy() for _ in range(3)]
         )
 
-        st.markdown("**Marketplaces à exporter :**")
-        mp_cols = st.columns(3)
-        with mp_cols[0]:
-            export_amazon_lot = st.checkbox("📦 Amazon", value=True, key="lot_amazon")
-        with mp_cols[1]:
-            export_cdiscount_lot = st.checkbox("🛒 Cdiscount", value=True, key="lot_cdiscount")
-        with mp_cols[2]:
-            export_fnac_lot = st.checkbox("🎵 Fnac Darty", value=False, key="lot_fnac")
+    df_input = st.data_editor(
+        st.session_state["batch_df_edit"],
+        num_rows="dynamic",          # permet d'ajouter / supprimer des lignes
+        use_container_width=True,
+        column_config={
+            "marque":           st.column_config.TextColumn("Marque *"),
+            "type_produit":     st.column_config.TextColumn("Type de produit *"),
+            "materiau":         st.column_config.TextColumn("Matériau"),
+            "couleur":          st.column_config.TextColumn("Couleur"),
+            "infos_produits":   st.column_config.TextColumn(
+                "Infos produits",
+                help="Séparés par des virgules : 750ml, garde le froid 24h, sans BPA",
+            ),
+            "image_url":        st.column_config.TextColumn("URL image principale"),
+            "images_secondaires": st.column_config.TextColumn("URLs images secondaires"),
+        },
+        key="batch_editor",
+    )
+    st.session_state["batch_df_edit"] = df_input
 
-        if st.button("Générer toutes les fiches", type="primary"):
-            results = []
-            lignes_export_amazon = []
-            lignes_export_cdiscount = []
-            lignes_export_fnac = []
-            lignes_sans_virgule = 0
-            lignes_incompletes = 0
+    # ── Import Excel (option secondaire) ──
+    with st.expander("📥 Ou importer un fichier Excel existant"):
+        template_df = pd.DataFrame([COLONNES_DEFAUT.copy()])
+        template_buffer = io.BytesIO()
+        template_df.to_excel(template_buffer, index=False, engine="openpyxl")
+        st.download_button(
+            "Télécharger le modèle Excel vierge",
+            data=template_buffer.getvalue(),
+            file_name="modele_produits.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        uploaded_file = st.file_uploader("Fichier Excel (.xlsx)", type=["xlsx"])
+        if uploaded_file is not None:
+            df_importe = pd.read_excel(uploaded_file).fillna("")
+            # On fusionne les colonnes manquantes pour éviter les KeyError
+            for col, defaut in COLONNES_DEFAUT.items():
+                if col not in df_importe.columns:
+                    df_importe[col] = defaut
+            st.session_state["batch_df_edit"] = df_importe[list(COLONNES_DEFAUT.keys())]
+            df_input = st.session_state["batch_df_edit"]
+            st.success(f"✅ {len(df_importe)} produit(s) importé(s) — le tableau ci-dessus a été mis à jour.")
+
+    st.markdown("---")
+
+    verifier_images = st.checkbox(
+        "Vérifier la conformité des images (plus lent)",
+        value=False,
+    )
+
+    st.markdown("**Marketplaces à exporter :**")
+    mp_cols = st.columns(3)
+    with mp_cols[0]:
+        export_amazon_lot = st.checkbox("📦 Amazon", value=True, key="lot_amazon")
+    with mp_cols[1]:
+        export_cdiscount_lot = st.checkbox("🛒 Cdiscount", value=True, key="lot_cdiscount")
+    with mp_cols[2]:
+        export_fnac_lot = st.checkbox("🎵 Fnac Darty", value=False, key="lot_fnac")
+
+    if st.button("Générer toutes les fiches", type="primary"):
+        results = []
+        lignes_export_amazon = []
+        lignes_export_cdiscount = []
+        lignes_export_fnac = []
+        lignes_sans_virgule = 0
+        lignes_incompletes = 0
+
+        df_traiter = df_input.fillna("")
+        total = len(df_traiter)
+
+        if total == 0:
+            st.warning("Le tableau est vide — ajoute au moins un produit.")
+        else:
             progress = st.progress(0, text="Génération en cours...")
-            total = len(df_input)
 
-            for i, row in df_input.iterrows():
+            for i, row in df_traiter.iterrows():
                 marque = str(row.get("marque", "")).strip()
                 type_produit = str(row.get("type_produit", "")).strip()
 
@@ -702,20 +724,12 @@ with tab_batch:
                         generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url, indice=i)
                     )
                 ajouter_a_historique(raw_input, listing, report.score, score_image or None)
-
                 progress.progress((i + 1) / total, text=f"Produit {i + 1}/{total} traité")
 
             if lignes_incompletes:
-                st.error(
-                    f"⛔ {lignes_incompletes} ligne(s) ignorée(s) car 'marque' ou "
-                    "'type_produit' (obligatoires) sont manquants."
-                )
+                st.error(f"⛔ {lignes_incompletes} ligne(s) ignorée(s) : Marque ou Type de produit manquant.")
             if lignes_sans_virgule:
-                st.warning(
-                    f"💡 {lignes_sans_virgule} ligne(s) ont une colonne 'infos_produits' "
-                    "sans virgule (traitée comme une seule information). Sépare chaque "
-                    "info par une virgule pour de meilleurs résultats."
-                )
+                st.warning(f"💡 {lignes_sans_virgule} ligne(s) sans virgule dans Infos produits.")
 
             result_df = pd.DataFrame(results)
             st.session_state["batch_results"] = result_df
