@@ -589,19 +589,25 @@ with tab_batch:
     )
 
     st.markdown("**Marketplaces à exporter :**")
-    mp_cols = st.columns(3)
+    mp_cols = st.columns(5)
     with mp_cols[0]:
         export_amazon_lot = st.checkbox("📦 Amazon", value=True, key="lot_amazon")
     with mp_cols[1]:
         export_cdiscount_lot = st.checkbox("🛒 Cdiscount", value=True, key="lot_cdiscount")
     with mp_cols[2]:
         export_fnac_lot = st.checkbox("🎵 Fnac Darty", value=False, key="lot_fnac")
+    with mp_cols[3]:
+        export_leroy_lot = st.checkbox("🛠️ Leroy Merlin", value=False, key="lot_leroy")
+    with mp_cols[4]:
+        export_mdm_lot = st.checkbox("🏠 Maisons du Monde", value=False, key="lot_mdm")
 
     if st.button("Générer toutes les fiches", type="primary"):
         results = []
         lignes_export_amazon = []
         lignes_export_cdiscount = []
         lignes_export_fnac = []
+        lignes_export_leroy = []
+        lignes_export_mdm = []
         lignes_sans_virgule = 0
         lignes_incompletes = 0
 
@@ -675,6 +681,17 @@ with tab_batch:
                     lignes_export_fnac.append(
                         generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url, indice=i)
                     )
+                if export_leroy_lot:
+                    lignes_export_leroy.append(
+                        generer_ligne_export_leroy_merlin(raw_input, listing, image_url=image_url, indice=i)
+                    )
+                if export_mdm_lot:
+                    lignes_export_mdm.append(
+                        generer_ligne_export_maisons_du_monde(
+                            raw_input, listing, image_url=image_url,
+                            images_secondaires=images_secondaires, indice=i,
+                        )
+                    )
                 ajouter_a_historique(raw_input, listing, report.score, score_image or None)
                 progress.progress((i + 1) / total, text=f"Produit {i + 1}/{total} traité")
 
@@ -691,10 +708,14 @@ with tab_batch:
                 st.session_state["batch_export_cdiscount"] = pd.DataFrame(lignes_export_cdiscount)
             if lignes_export_fnac:
                 st.session_state["batch_export_fnac"] = pd.DataFrame(lignes_export_fnac)
+            if lignes_export_leroy:
+                st.session_state["batch_export_leroy"] = pd.DataFrame(lignes_export_leroy)
+            if lignes_export_mdm:
+                st.session_state["batch_export_mdm"] = pd.DataFrame(lignes_export_mdm)
 
     if "batch_results" in st.session_state:
         st.markdown("### Télécharger les exports")
-        dl_cols = st.columns(3)
+        dl_cols = st.columns(5)
         with dl_cols[0]:
             if "batch_export_amazon" in st.session_state:
                 buf = io.BytesIO()
@@ -720,6 +741,24 @@ with tab_batch:
                 st.download_button(
                     "🎵 Export Fnac Darty",
                     data=buf.getvalue(), file_name="export_fnac_darty_lot.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        with dl_cols[3]:
+            if "batch_export_leroy" in st.session_state:
+                buf = io.BytesIO()
+                st.session_state["batch_export_leroy"].to_excel(buf, index=False, engine="openpyxl")
+                st.download_button(
+                    "🛠️ Export Leroy Merlin",
+                    data=buf.getvalue(), file_name="export_leroy_merlin_lot.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        with dl_cols[4]:
+            if "batch_export_mdm" in st.session_state:
+                buf = io.BytesIO()
+                st.session_state["batch_export_mdm"].to_excel(buf, index=False, engine="openpyxl")
+                st.download_button(
+                    "🏠 Export Maisons du Monde",
+                    data=buf.getvalue(), file_name="export_maisons_du_monde_lot.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
 

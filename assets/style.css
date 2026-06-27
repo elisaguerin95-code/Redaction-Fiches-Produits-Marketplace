@@ -157,15 +157,43 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
 
 /* ── File uploader — reset complet pour éviter les doublons ──── */
+[data-testid="stFileUploader"] {
+  max-width: 560px !important;
+}
+
 [data-testid="stFileUploader"] section {
   display: flex !important;
   flex-direction: column !important;
+  max-width: 560px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
   background: var(--bg-card) !important;
   border: 1px dashed var(--border-md) !important;
   border-radius: var(--radius) !important;
+  min-height: 62px !important;
+  height: 62px !important;
+  max-width: 560px !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+[data-testid="stFileUploaderDropzone"] > div {
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+[data-testid="stFileUploaderDropzoneInstructions"] {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: left !important;
+}
+
+[data-testid="stFileUploaderDropzoneInstructions"] * {
+  font-size: 0.78rem !important;
+  color: var(--text-muted) !important;
 }
 
 /* Streamlit peut afficher son libellé natif + un pseudo-élément selon les versions.
