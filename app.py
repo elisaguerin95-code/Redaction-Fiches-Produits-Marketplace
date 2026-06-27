@@ -469,28 +469,25 @@ with tab_single:
 
     st.markdown("---")
 
-    # Formulaire principal : champs obligatoires uniquement
-    with st.form("single_listing_form"):
-        c1, c2 = st.columns(2)
-        with c1:
-            brand = st.text_input("Marque *", placeholder="ex : Hydra+")
-        with c2:
-            product_type = st.text_input("Type de produit *",
-                                         placeholder="ex : gourde isotherme")
-        st.caption("* champs obligatoires")
-        submitted = st.form_submit_button("🚀 Générer la fiche optimisée",
-                                          type="primary")
+    # Champs obligatoires (sans st.form pour pouvoir mettre le bouton après les optionnels)
+    c1, c2 = st.columns(2)
+    with c1:
+        brand = st.text_input("Marque *", placeholder="ex : Hydra+", key="brand")
+    with c2:
+        product_type = st.text_input("Type de produit *",
+                                     placeholder="ex : gourde isotherme",
+                                     key="product_type")
+    st.caption("* champs obligatoires")
 
-    # ── Toggle + champs optionnels (hors formulaire, sous Marque/Type)
-    # Les valeurs sont stockées en session_state pour survivre au rerun.
+    # ── Toggle + champs optionnels
     afficher_options = st.toggle(
-        "Détails optionnels du produit",
+        "Caractéristiques optionnelles du produit",
         value=False,
         key="toggle_options",
         help="Matériau, couleur, infos produits, images, SKU...",
     )
 
-    # Valeurs par défaut (si toggle fermé, on utilise ce qui est en mémoire)
+    # Valeurs par défaut conservées en session_state
     materiau          = st.session_state.get("opt_materiau", "")
     sku               = st.session_state.get("opt_sku", "")
     couleur           = st.session_state.get("opt_couleur", "")
@@ -535,6 +532,9 @@ with tab_single:
             placeholder="https://..., https://...", height=70,
             help="Amazon est plus souple sur ces images (pas de fond blanc requis).",
         )
+
+    # Bouton Générer — en bas, après les champs optionnels
+    submitted = st.button("🚀 Générer la fiche optimisée", type="primary")
 
     if submitted:
         if not brand or not product_type:
@@ -586,7 +586,29 @@ with tab_batch:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    uploaded_file = st.file_uploader("📂 Importer la matrice Excel des produits", type=["xlsx"])
+    st.markdown(
+        """
+        <div style="
+            background: #252B35;
+            border: 1px dashed #3A4455;
+            border-radius: 6px;
+            padding: 0.6rem 1rem;
+            margin-bottom: 0.5rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+            color: #8A9BB0;
+        ">
+            📂 <strong style="color:#F4F1EA;">Glisse ton fichier ici</strong>
+            &nbsp;ou utilise le sélecteur ci-dessous (format .xlsx uniquement)
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    uploaded_file = st.file_uploader(
+        "Fichier Excel",
+        type=["xlsx"],
+        label_visibility="collapsed",
+    )
 
     if uploaded_file is not None:
         df_input = pd.read_excel(uploaded_file)
