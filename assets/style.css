@@ -156,7 +156,9 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 /* ── Dataframes ──────────────────────────────────────────────── */
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
 
-/* ── File uploader — version compacte et alignée ───────────── */
+/* ── File uploader — version compacte stable ──────────────── */
+/* Correction volontairement simple : on ne réécrit plus les textes natifs
+   de Streamlit avec des pseudo-éléments, car c’est ce qui créait les doublons. */
 [data-testid="stFileUploader"] {
   max-width: 640px !important;
 }
@@ -166,7 +168,6 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 }
 
 [data-testid="stFileUploaderDropzone"] {
-  position: relative !important;
   width: 100% !important;
   max-width: 640px !important;
   min-height: 66px !important;
@@ -175,6 +176,7 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   display: flex !important;
   align-items: center !important;
   justify-content: flex-start !important;
+  gap: 18px !important;
   background: rgba(31, 39, 52, 0.72) !important;
   border: 1px solid var(--border-md) !important;
   border-radius: 9px !important;
@@ -188,49 +190,31 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   margin: 0 !important;
   display: flex !important;
   align-items: center !important;
+  gap: 18px !important;
 }
 
-/* On évite de masquer tout le bloc : selon Streamlit, le bouton peut être dedans.
-   On cache seulement les textes d'aide natifs qui créent le doublon. */
-[data-testid="stFileUploaderDropzoneInstructions"] small,
-[data-testid="stFileUploaderDropzone"] small {
-  display: none !important;
-  visibility: hidden !important;
-}
-
-[data-testid="stFileUploaderDropzone"]::before {
+/* Important : aucun texte artificiel. Cela évite les superpositions. */
+[data-testid="stFileUploaderDropzone"]::before,
+[data-testid="stFileUploaderDropzone"]::after,
+[data-testid="stFileUploaderDropzone"] button::before,
+[data-testid="stFileUploaderDropzone"] button::after {
   content: none !important;
   display: none !important;
 }
 
-[data-testid="stFileUploaderDropzone"]::after {
-  content: "Formats acceptés : XLSX  •  Taille max : 200MB" !important;
-  display: block !important;
-  position: absolute !important;
-  left: 206px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  color: var(--text-muted) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 0.84rem !important;
-  font-weight: 400 !important;
-  white-space: nowrap !important;
-  pointer-events: none !important;
-}
-
 [data-testid="stFileUploaderDropzone"] button {
-  position: relative !important;
   width: 150px !important;
   min-width: 150px !important;
   height: 42px !important;
   min-height: 42px !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 0 18px !important;
   background: rgba(24, 31, 44, 0.95) !important;
   border: 1px solid var(--border-md) !important;
   border-radius: 8px !important;
-  color: transparent !important;
-  font-size: 0 !important;
+  color: var(--text) !important;
+  font-size: 0.88rem !important;
+  font-weight: 600 !important;
   box-shadow: none !important;
 }
 
@@ -239,31 +223,19 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   background: rgba(34, 43, 58, 0.98) !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button::before {
-  content: "⇧" !important;
+/* On garde le texte natif Streamlit au lieu de le recréer en CSS. */
+[data-testid="stFileUploaderDropzoneInstructions"] {
   display: block !important;
-  position: absolute !important;
-  left: 24px !important;
-  top: 50% !important;
-  transform: translateY(-53%) !important;
-  color: var(--accent) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 1.15rem !important;
-  line-height: 1 !important;
+  color: var(--text-muted) !important;
+  font-size: 0.84rem !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button::after {
-  content: "Upload" !important;
-  display: block !important;
-  position: absolute !important;
-  left: 68px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  color: var(--text) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  white-space: nowrap !important;
+[data-testid="stFileUploaderDropzoneInstructions"] * {
+  color: var(--text-muted) !important;
+  font-size: 0.84rem !important;
 }
 
 @media (max-width: 720px) {
@@ -271,10 +243,6 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   [data-testid="stFileUploader"] section,
   [data-testid="stFileUploaderDropzone"] {
     max-width: 100% !important;
-  }
-
-  [data-testid="stFileUploaderDropzone"]::after {
-    display: none !important;
   }
 }
 
