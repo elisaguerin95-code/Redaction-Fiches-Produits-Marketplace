@@ -566,128 +566,21 @@ with tab_batch:
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
 
-    uploaded_file = st.file_uploader(
-        "Importer la matrice Excel des produits (.xlsx)",
-        type=["xlsx"],
-    )
+    if "batch_df_edit" not in st.session_state:
+        st.session_state["batch_df_edit"] = pd.DataFrame(columns=list(COLONNES_DEFAUT.keys()))
 
+    df_input = st.session_state["batch_df_edit"]
+
+    uploaded_file = st.file_uploader("Fichier Excel (.xlsx)", type=["xlsx"])
     if uploaded_file is not None:
-        df_input = pd.read_excel(uploaded_file).fillna("")
-        st.dataframe(df_input, use_container_width=True)
-
-        verifier_images = st.checkbox(
-            "Vérifier la conformité des images (plus lent)",
-            value=False,
-        )
-
-        st.markdown("**Marketplaces à exporter :**")
-        mp_cols = st.columns(3)
-        with mp_cols[0]:
-            export_amazon_lot = st.checkbox("📦 Amazon", value=True, key="lot_amazon")
-        with mp_cols[1]:
-            export_cdiscount_lot = st.checkbox("🛒 Cdiscount", value=True, key="lot_cdiscount")
-        with mp_cols[2]:
-            export_fnac_lot = st.checkbox("🎵 Fnac Darty", value=False, key="lot_fnac")
-
-        if st.button("Générer toutes les fiches", type="primary"):
-            results = []
-            lignes_export_amazon = []
-            lignes_export_cdiscount = []
-            lignes_export_fnac = []
-            lignes_sans_virgule = 0
-            lignes_incompletes = 0
-            progress = st.progress(0, text="Génération en cours...")
-            total = len(df_input)
-
-            for i, row in df_input.iterrows():
-                marque = str(row.get("marque", "")).strip()
-                type_produit = str(row.get("type_produit", "")).strip()
-
-                if not marque or not type_produit:
-                    lignes_incompletes += 1
-                    progress.progress((i + 1) / total, text=f"Produit {i + 1}/{total} traité")
-                    continue
-
-                infos = str(row.get("infos_produits", ""))
-                if infos and "," not in infos and len(infos.split()) > 6:
-                    lignes_sans_virgule += 1
-
-                image_url = str(row.get("image_url", ""))
-                images_secondaires = parser_urls(str(row.get("images_secondaires", "")))
-
-                raw_input = {
-                    "marque": marque,
-                    "type_produit": type_produit,
-                    "materiau": row.get("materiau", ""),
-                    "couleur": row.get("couleur", ""),
-                    "infos_produits": infos,
-                    "image_url": image_url,
-                    "images_secondaires": images_secondaires,
-                }
-                listing = generer_fiche(raw_input)
-                report = evaluate_listing(listing)
-
-                score_image = ""
-                if verifier_images and image_url:
-                    rapport_image = verifier_image(image_url, image_principale=True)
-                    score_image = rapport_image["score"] if rapport_image["url_valide"] else "Erreur"
-
-                results.append({
-                    **{k: v for k, v in raw_input.items() if k != "images_secondaires"},
-                    "nb_images_secondaires": len(images_secondaires),
-                    "titre_optimise": listing["title"],
-                    "description_marketing": listing["description"],
-                    "bullets": " | ".join(listing.get("bullets", [])),
-                    "backend_keywords": listing.get("backend_keywords", ""),
-                    "categorie_suggeree": listing.get("category_suggestion", ""),
-                    "attributs_specifiques": " | ".join(
-                        f"{k}: {v}" for k, v in listing.get("attributs_specifiques", {}).items()
-                    ),
-                    "score_conformite_texte": report.score,
-                    "score_conformite_image": score_image,
-                })
-                if export_amazon_lot:
-                    lignes_export_amazon.append(
-                        generer_ligne_export_amazon(
-                            raw_input, listing, image_url=image_url,
-                            images_secondaires=images_secondaires, indice=i,
-                        )
-                    )
-                if export_cdiscount_lot:
-                    lignes_export_cdiscount.append(
-                        generer_ligne_export_cdiscount(raw_input, listing, image_url=image_url, indice=i)
-                    )
-                if export_fnac_lot:
-                    lignes_export_fnac.append(
-                        generer_ligne_export_fnac_darty(raw_input, listing, image_url=image_url, indice=i)
-                    )
-                ajouter_a_historique(raw_input, listing, report.score, score_image or None)
-                progress.progress((i + 1) / total, text=f"Produit {i + 1}/{total} traité")
-
-            if lignes_incompletes:
-                st.error(f"⛔ {lignes_incompletes} ligne(s) ignorée(s) : Marque ou Type de produit manquant.")
-            if lignes_sans_virgule:
-                st.warning(f"💡 {lignes_sans_virgule} ligne(s) sans virgule dans Infos produits.")
-
-            result_df = pd.DataFrame(results)
-            st.session_state["batch_results"] = result_df
-            if lignes_export_amazon:
-                st.session_state["batch_export_amazon"] = pd.DataFrame(lignes_export_amazon)
-            if lignes_export_cdiscount:
-                st.session_state["batch_export_cdiscount"] = pd.DataFrame(lignes_export_cdiscount)
-            if lignes_export_fnac:
-                st.session_state["batch_export_fnac"] = pd.DataFrame(lignes_export_fnac)
-        uploaded_file = st.file_uploader("Fichier Excel (.xlsx)", type=["xlsx"])
-        if uploaded_file is not None:
-            df_importe = pd.read_excel(uploaded_file).fillna("")
-            # On fusionne les colonnes manquantes pour éviter les KeyError
-            for col, defaut in COLONNES_DEFAUT.items():
-                if col not in df_importe.columns:
-                    df_importe[col] = defaut
-            st.session_state["batch_df_edit"] = df_importe[list(COLONNES_DEFAUT.keys())]
-            df_input = st.session_state["batch_df_edit"]
-            st.success(f"✅ {len(df_importe)} produit(s) importé(s) — le tableau ci-dessus a été mis à jour.")
-
+        df_importe = pd.read_excel(uploaded_file).fillna("")
+        # On fusionne les colonnes manquantes pour éviter les KeyError
+        for col, defaut in COLONNES_DEFAUT.items():
+            if col not in df_importe.columns:
+                df_importe[col] = defaut
+        st.session_state["batch_df_edit"] = df_importe[list(COLONNES_DEFAUT.keys())]
+        df_input = st.session_state["batch_df_edit"]
+        st.success(f"✅ {len(df_importe)} produit(s) importé(s) — le tableau a été mis à jour.")
     st.markdown("---")
 
     verifier_images = st.checkbox(
