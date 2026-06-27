@@ -190,21 +190,12 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
   align-items: center !important;
 }
 
-
-/* Cache tous les textes natifs Streamlit dans la dropzone pour éviter les doublons. */
-[data-testid="stFileUploaderDropzone"] [data-testid="stFileUploaderDropzoneInstructions"],
-[data-testid="stFileUploaderDropzone"] p,
-[data-testid="stFileUploaderDropzone"] small,
-[data-testid="stFileUploaderDropzone"] span,
-[data-testid="stFileUploaderDropzone"] svg:not(button svg) {
+/* On évite de masquer tout le bloc : selon Streamlit, le bouton peut être dedans.
+   On cache seulement les textes d'aide natifs qui créent le doublon. */
+[data-testid="stFileUploaderDropzoneInstructions"] small,
+[data-testid="stFileUploaderDropzone"] small {
   display: none !important;
-}
-
-[data-testid="stFileUploaderDropzone"] button span,
-[data-testid="stFileUploaderDropzone"] button p,
-[data-testid="stFileUploaderDropzone"] button small,
-[data-testid="stFileUploaderDropzone"] button svg {
-  display: none !important;
+  visibility: hidden !important;
 }
 
 [data-testid="stFileUploaderDropzone"]::before {
