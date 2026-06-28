@@ -138,9 +138,3 @@ Détection automatique depuis le fichier officiel Amazon Browse Tree Mappings FR
 - Remplacer la détection de catégorie par un modèle de classification entraîné
 - Suggestions de mots-clés SEO par analyse concurrentielle
 - Historique persistant (base de données légère)
-
----
-
-## 👩‍💻 Auteur
-
-Projet réalisé par **Elisa Guérin** dans le cadre du datathon Mission Data — Wild Code School / Simplon (juin 2026).
