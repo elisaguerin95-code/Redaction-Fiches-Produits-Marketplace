@@ -156,116 +156,37 @@ hr { border: none !important; border-top: 1px solid var(--border) !important; ma
 /* ── Dataframes ──────────────────────────────────────────────── */
 [data-testid="stDataFrame"] { border: 1px solid var(--border) !important; border-radius: var(--radius) !important; overflow: hidden !important; }
 
-/* ── File uploader — compact sans doublon ───────────────────────
-   Objectif : garder le vrai bouton Streamlit visible, masquer uniquement
-   les textes natifs qui se superposent, puis afficher une seule aide propre. */
-[data-testid="stFileUploader"] {
-  max-width: 640px !important;
+/* ── File uploader — version stable ───────────────────────── */
+
+[data-testid="stFileUploader"]{
+  max-width:640px!important;
 }
 
-[data-testid="stFileUploader"] section {
-  max-width: 640px !important;
+[data-testid="stFileUploaderDropzone"]{
+  min-height:96px!important;
+  padding:18px!important;
+  background:rgba(31,39,52,.72)!important;
+  border:1px solid var(--border-md)!important;
+  border-radius:9px!important;
+  display:block!important;
 }
 
-[data-testid="stFileUploaderDropzone"] {
-  width: 100% !important;
-  max-width: 640px !important;
-  min-height: 66px !important;
-  height: 66px !important;
-  padding: 0 18px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-  gap: 18px !important;
-  background: rgba(31, 39, 52, 0.72) !important;
-  border: 1px solid var(--border-md) !important;
-  border-radius: 9px !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02) !important;
+[data-testid="stFileUploaderDropzone"] > div{
+  display:block!important;
 }
 
-/* On conserve le conteneur interne Streamlit, mais sans le laisser étirer ou
-   superposer les textes au bouton. */
-[data-testid="stFileUploaderDropzone"] > div {
-  width: auto !important;
-  min-height: 0 !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 0 !important;
+[data-testid="stFileUploaderDropzone"] button{
+  background:rgba(24,31,44,.95)!important;
+  border:1px solid var(--border-md)!important;
+  border-radius:8px!important;
+  color:var(--text)!important;
+  font-weight:600!important;
 }
 
-/* Masque uniquement les textes d'instruction natifs Streamlit, responsables de
-   “uploadUpload” et “200MB per file • XLSX” en doublon. Ne cible PAS le bouton. */
-[data-testid="stFileUploaderDropzoneInstructions"],
-[data-testid="stFileUploaderDropzoneInstructions"] * {
-  display: none !important;
-  visibility: hidden !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
+/* Désactive les anciennes surcharges éventuelles */
 [data-testid="stFileUploaderDropzone"]::before,
-[data-testid="stFileUploaderDropzone"] button::before,
-[data-testid="stFileUploaderDropzone"] button::after {
-  content: none !important;
-  display: none !important;
-}
-
-/* Texte d'aide unique, ajouté au niveau de la dropzone pour éviter toute
-   superposition avec le contenu natif de Streamlit. */
-[data-testid="stFileUploaderDropzone"]::after {
-  content: "Formats acceptés : XLSX • Taille max : 200MB" !important;
-  display: inline-block !important;
-  color: var(--text-muted) !important;
-  font-family: var(--font-sans) !important;
-  font-size: 0.84rem !important;
-  white-space: nowrap !important;
-  line-height: 1 !important;
-  margin-left: 0 !important;
-}
-
-[data-testid="stFileUploaderDropzone"] button {
-  width: 150px !important;
-  min-width: 150px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  margin: 0 !important;
-  padding: 0 18px !important;
-  background: rgba(24, 31, 44, 0.95) !important;
-  border: 1px solid var(--border-md) !important;
-  border-radius: 8px !important;
-  color: var(--text) !important;
-  font-size: 0.88rem !important;
-  font-weight: 600 !important;
-  box-shadow: none !important;
-}
-
-[data-testid="stFileUploaderDropzone"] button:hover {
-  border-color: var(--accent) !important;
-  background: rgba(34, 43, 58, 0.98) !important;
-}
-
-@media (max-width: 720px) {
-  [data-testid="stFileUploader"],
-  [data-testid="stFileUploader"] section,
-  [data-testid="stFileUploaderDropzone"] {
-    max-width: 100% !important;
-  }
-
-  [data-testid="stFileUploaderDropzone"] {
-    height: auto !important;
-    min-height: 66px !important;
-    flex-wrap: wrap !important;
-    padding: 12px 14px !important;
-  }
-
-  [data-testid="stFileUploaderDropzone"]::after {
-    font-size: 0.78rem !important;
-  }
+[data-testid="stFileUploaderDropzone"]::after{
+  content:none!important;
 }
 
 /* ── Marketplaces : cases à cocher façon cartes ─────────────── */
